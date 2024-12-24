@@ -15,3 +15,5 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
 );""")
 
 connection.commit()
+cursor.close()
+connection.close()

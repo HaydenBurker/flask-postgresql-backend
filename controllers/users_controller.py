@@ -14,6 +14,8 @@ def add_user():
     cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("first_name"), post_data.get("last_name"), post_data.get("email"), post_data.get("password"), post_data.get("active")))
     [user_id, first_name, last_name, email, password, active] = cursor.fetchone()
     connection.commit()
+    cursor.close()
+    connection.close()
 
     return jsonify({"message": "added user", "results": {
         "user_id": user_id,
@@ -31,6 +33,8 @@ def get_all_users():
     cursor.execute(get_all_query)
 
     users = cursor.fetchall()
+    cursor.close()
+    connection.close()
 
     users = [{"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active} for [user_id, first_name, last_name, email, active] in users]
 
@@ -44,6 +48,8 @@ def get_user_by_id(user_id):
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
     user = cursor.fetchone()
+    cursor.close()
+    connection.close()
     if not user:
         return jsonify({"message": "user not found"}), 404
 
@@ -74,6 +80,8 @@ def update_user(user_id):
     cursor.execute(update_query, (post_data.get("first_name") or first_name, post_data.get("last_name") or last_name, post_data.get("email") or email, post_data.get("password") or password, user_id))
     user = cursor.fetchone()
     connection.commit()
+    cursor.close()
+    connection.close()
 
     [user_id, first_name, last_name, email, password, active] = user
     user = {"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active}
@@ -98,6 +106,8 @@ def user_activity(user_id):
     cursor.execute(activity_query, (not active, user_id))
     user = cursor.fetchone()
     connection.commit()
+    cursor.close()
+    connection.close()
 
     [user_id, first_name, last_name, email, password, active] = user
     user = {"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active}
@@ -120,5 +130,7 @@ def delete_user(user_id):
     WHERE user_id = %s"""
     cursor.execute(delete_query, (user_id,))
     connection.commit()
+    cursor.close()
+    connection.close()
 
     return jsonify({"message": "user deleted"}), 200
