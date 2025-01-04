@@ -1,7 +1,6 @@
 from db import get_connection
 
 with get_connection() as [connection, cursor]:
-
     cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
             user_id UUID NOT NULL,
             first_name VARCHAR NOT NULL,
