@@ -11,3 +11,15 @@ def add_product():
 @products.route("/products", methods=["GET"])
 def get_all_products():
     return products_controller.get_all_products()
+
+@products.route("/product/<product_id>", methods=["GET"])
+def get_product_by_id(product_id):
+    return products_controller.get_product_by_id(product_id)
+
+@products.route("/product/<product_id>", methods=["PUT"])
+def update_product(product_id):
+    return products_controller.update_product(product_id)
+
+@products.route("/product/<product_id>", methods=["DELETE"])
+def delete_product(product_id):
+    return products_controller.delete_product(product_id)
