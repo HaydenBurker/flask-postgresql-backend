@@ -23,3 +23,7 @@ def update_product(product_id):
 @products.route("/product/<product_id>", methods=["DELETE"])
 def delete_product(product_id):
     return products_controller.delete_product(product_id)
+
+@products.route("/product/add-category", methods=["PATCH"])
+def product_add_category():
+    return products_controller.product_add_category()

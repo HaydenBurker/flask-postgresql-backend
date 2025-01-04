@@ -8,3 +8,10 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
 )""")
 
 connection.commit()
+
+def create_category_object(category):
+    [category_id, name] = category
+    return {
+        "category_id": category_id,
+        "name": name,
+    }
