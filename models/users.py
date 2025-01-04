@@ -11,6 +11,6 @@ with get_connection() as [connection, cursor]:
             active BOOLEAN NOT NULL,
             UNIQUE (email),
             PRIMARY KEY (user_id)
-    );""")
+    )""")
 
     connection.commit()

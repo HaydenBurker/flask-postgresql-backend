@@ -2,7 +2,6 @@ import uuid
 from flask import request, jsonify
 
 from db import get_connection
-import models.users
 
 def add_user():
     post_data = request.json
