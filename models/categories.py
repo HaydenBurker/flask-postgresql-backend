@@ -1,11 +1,10 @@
-from db import get_connection
+from db import connection, cursor
 
-with get_connection() as [connection, cursor]:
-    cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
-            category_id UUID NOT NULL,
-            name VARCHAR NOT NULL UNIQUE,
-            UNIQUE (name),
-            PRIMARY KEY (category_id)
-    )""")
+cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
+    category_id UUID NOT NULL,
+    name VARCHAR NOT NULL UNIQUE,
+    UNIQUE (name),
+    PRIMARY KEY (category_id)
+)""")
 
-    connection.commit()
+connection.commit()

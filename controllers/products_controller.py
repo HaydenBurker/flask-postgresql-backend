@@ -1,7 +1,7 @@
 import uuid
 from flask import request, jsonify
 
-from db import get_connection
+from db import connection, cursor
 
 def create_product_object(product, cursor):
     [product_id, name, created_by_id] = product
@@ -27,76 +27,81 @@ def create_product_object(product, cursor):
 
 def add_product():
     post_data = request.json
-    with get_connection() as [connection, cursor]:
-        insert_query = """INSERT INTO "Products"
-        VALUES (%s, %s, %s) RETURNING *"""
+
+    insert_query = """INSERT INTO "Products"
+    VALUES (%s, %s, %s) RETURNING *"""
+    try:
         cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("name"), post_data.get("created_by_id")))
         product = cursor.fetchone()
         connection.commit()
+    except:
+        connection.rollback()
+        return jsonify({"message": "unable to add product"}), 400
 
-        product = create_product_object(product, cursor)
-
-    return jsonify({"message": "product added", "results": product}), 201
+    return jsonify({"message": "product added", "results": create_product_object(product, cursor)}), 201
 
 def get_all_products():
-    with get_connection() as [_, cursor]:
-        get_all_query = 'SELECT * FROM "Products"'
-        cursor.execute(get_all_query)
-        products = cursor.fetchall()
+    get_all_query = 'SELECT * FROM "Products"'
+    cursor.execute(get_all_query)
+    products = cursor.fetchall()
 
-        products = [create_product_object(product, cursor) for product in products]
+    products = [create_product_object(product, cursor) for product in products]
 
     return jsonify({"message": "products found", "results": products}), 200
 
 def get_product_by_id(product_id):
-    with get_connection() as [_, cursor]:
-        get_by_id_query = """SELECT * FROM "Products"
-        WHERE product_id = %s"""
-        cursor.execute(get_by_id_query, (product_id,))
-        product = cursor.fetchone()
-        if not product:
-            return jsonify({"message": "product not found"}), 404
+    get_by_id_query = """SELECT * FROM "Products"
+    WHERE product_id = %s"""
+    cursor.execute(get_by_id_query, (product_id,))
+    product = cursor.fetchone()
+    if not product:
+        return jsonify({"message": "product not found"}), 404
 
-        product = create_product_object(product, cursor)
-    return jsonify({"message": "product found", "results": product}), 200
+    return jsonify({"message": "product found", "results": create_product_object(product, cursor)}), 200
 
 def update_product(product_id):
     post_data = request.json
-    with get_connection() as [connection, cursor]:
-        get_by_id_query = """SELECT * FROM "Products"
-        WHERE product_id = %s"""
-        cursor.execute(get_by_id_query, (product_id,))
-        product = cursor.fetchone()
-        if not product:
-            return jsonify({"message": "product not found"}), 404
+    
+    get_by_id_query = """SELECT * FROM "Products"
+    WHERE product_id = %s"""
+    cursor.execute(get_by_id_query, (product_id,))
+    product = cursor.fetchone()
+    if not product:
+        return jsonify({"message": "product not found"}), 404
 
-        [product_id, name, created_by_id] = product
+    [product_id, name, created_by_id] = product
 
-        update_query = """UPDATE "Products"
-        SET name = %s,
-        created_by_id = %s
-        WHERE product_id = %s RETURNING *"""
+    update_query = """UPDATE "Products"
+    SET name = %s,
+    created_by_id = %s
+    WHERE product_id = %s RETURNING *"""
+    try:
         cursor.execute(update_query, (post_data.get("name", name), post_data.get("created_by_id", created_by_id), product_id))
         product = cursor.fetchone()
         connection.commit()
-        product = create_product_object(product, cursor)
+    except:
+        connection.rollback()
+        return jsonify({"message": "unable to update product"}), 400
 
-    return jsonify({"message": "product updated", "results": product}), 200
+    return jsonify({"message": "product updated", "results": create_product_object(product, cursor)}), 200
 
 def delete_product(product_id):
-    with get_connection() as [connection, cursor]:
-        get_by_id_query = """SELECT product_id FROM "Products"
-        WHERE product_id = %s"""
-        cursor.execute(get_by_id_query, (product_id,))
-        product = cursor.fetchone()
-        if not product:
-            return jsonify({"message": "product not found"}), 404
+    get_by_id_query = """SELECT product_id FROM "Products"
+    WHERE product_id = %s"""
+    cursor.execute(get_by_id_query, (product_id,))
+    product = cursor.fetchone()
+    if not product:
+        return jsonify({"message": "product not found"}), 404
 
-        [product_id] = product
+    [product_id] = product
 
-        delete_query = """DELETE FROM "Products"
-        WHERE product_id = %s"""
+    delete_query = """DELETE FROM "Products"
+    WHERE product_id = %s"""
+    try:
         cursor.execute(delete_query, (product_id,))
         connection.commit()
+    except:
+        connection.rollback()
+        return jsonify({"message": "unable to delete product"}), 400
 
     return jsonify({"message": "deleted product"}), 200

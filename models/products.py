@@ -1,13 +1,12 @@
-from db import get_connection
+from db import connection, cursor
 
-with get_connection() as [connection, cursor]:
-    cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
-            product_id UUID NOT NULL,
-            name VARCHAR NOT NULL UNIQUE,
-            created_by_id UUID,
-            UNIQUE (name),
-            PRIMARY KEY (product_id),
-            FOREIGN KEY (created_by_id) REFERENCES "Users" (user_id)
-    )""")
+cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
+    product_id UUID NOT NULL,
+    name VARCHAR NOT NULL UNIQUE,
+    created_by_id UUID,
+    UNIQUE (name),
+    PRIMARY KEY (product_id),
+    FOREIGN KEY (created_by_id) REFERENCES "Users" (user_id)
+)""")
 
-    connection.commit()
+connection.commit()
