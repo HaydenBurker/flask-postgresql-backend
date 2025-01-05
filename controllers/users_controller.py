@@ -2,41 +2,52 @@ import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
+from models.users import base_user_object
+from models.products import base_product_object
+from util.validate_uuid import validate_uuid4
+
+def create_user_object(user):
+    user = base_user_object(user)
+    user_id = user.get("user_id")
+    products = []
+
+    products_query = """SELECT * FROM "Products"
+    WHERE created_by_id = %s"""
+    cursor.execute(products_query, (user_id,))
+    products = cursor.fetchall()
+    products = [base_product_object(product) for product in products]
+
+    user["products"] = products
+    return user
 
 def add_user():
     post_data = request.json
-    cursor = connection.cursor()
 
     insert_query = """INSERT INTO "Users" (user_id, first_name, last_name, email, password, active)
-    VALUES (%s, %s, %s, %s, %s, %s) RETURNING *"""
+    VALUES (%s, %s, %s, %s, %s, %s) RETURNING user_id, first_name, last_name, email, active"""
 
     try:
         cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("first_name"), post_data.get("last_name"), post_data.get("email"), post_data.get("password"), post_data.get("active")))
-        [user_id, first_name, last_name, email, password, active] = cursor.fetchone()
+        user = cursor.fetchone()
         connection.commit()
     except:
         connection.rollback()
         return jsonify({"message": "unable to add user"}), 400
 
-    return jsonify({"message": "added user", "results": {
-        "user_id": user_id,
-        "first_name": first_name,
-        "last_name": last_name,
-        "email": email,
-        "active": active
-    }}), 201
+    return jsonify({"message": "added user", "results": create_user_object(user)}), 201
 
 def get_all_users():
     get_all_query = 'SELECT user_id, first_name, last_name, email, active FROM "Users"'
     cursor.execute(get_all_query)
 
     users = cursor.fetchall()
-
-    users = [{"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active} for [user_id, first_name, last_name, email, active] in users]
+    users = [create_user_object(user) for user in users]
 
     return jsonify({"message": "users found", "results": users}), 200
 
 def get_user_by_id(user_id):
+    if not validate_uuid4(user_id):
+        return jsonify({"message": "invalid user id"}), 400
     get_by_id_query = """SELECT user_id, first_name, last_name, email, active FROM "Users"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
@@ -44,11 +55,11 @@ def get_user_by_id(user_id):
     if not user:
         return jsonify({"message": "user not found"}), 404
 
-    [user_id, first_name, last_name, email, active] = user
-    user = {"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active}
-    return jsonify({"message": "user found", "results": user}), 200
+    return jsonify({"message": "user found", "results": create_user_object(user)}), 200
 
 def update_user(user_id):
+    if not validate_uuid4(user_id):
+        return jsonify({"message": "invalid user id"}), 400
     post_data = request.json
     get_by_id_query = """SELECT * FROM "Users"
     WHERE user_id = %s"""
@@ -64,7 +75,7 @@ def update_user(user_id):
     last_name = %s,
     email = %s,
     password = %s
-    WHERE user_id = %s RETURNING *"""
+    WHERE user_id = %s RETURNING user_id, first_name, last_name, email, active"""
 
     try:
         cursor.execute(update_query, (post_data.get("first_name") or first_name, post_data.get("last_name") or last_name, post_data.get("email") or email, post_data.get("password") or password, user_id))
@@ -73,12 +84,11 @@ def update_user(user_id):
     except:
         connection.rollback()
         return jsonify({"message": "unable to update user"}), 400
-
-    [user_id, first_name, last_name, email, password, active] = user
-    user = {"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active}
-    return jsonify({"message": "user updated", "results": user}), 200
+    return jsonify({"message": "user updated", "results": create_user_object(user)}), 200
 
 def user_activity(user_id):
+    if not validate_uuid4(user_id):
+        return jsonify({"message": "invalid user id"}), 400
     get_by_id_query = """SELECT active FROM "Users"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
@@ -90,16 +100,17 @@ def user_activity(user_id):
 
     activity_query = """UPDATE "Users"
     SET active = %s
-    WHERE user_id = %s RETURNING *"""
-    cursor.execute(activity_query, (not active, user_id))
+    WHERE user_id = %s RETURNING user_id, first_name, last_name, email, active"""
+    active = not active
+    cursor.execute(activity_query, (active, user_id))
     user = cursor.fetchone()
     connection.commit()
 
-    [user_id, first_name, last_name, email, password, active] = user
-    user = {"user_id": user_id, "first_name": first_name, "last_name": last_name, "email": email, "active": active}
-    return jsonify({"message": f"user {'activated' if active else 'deactivated'}", "results": user}), 200
+    return jsonify({"message": f"user {'activated' if active else 'deactivated'}", "results": create_user_object(user)}), 200
 
 def delete_user(user_id):
+    if not validate_uuid4(user_id):
+        return jsonify({"message": "invalid user id"}), 400
     get_by_id_query = """SELECT user_id FROM "Users"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))

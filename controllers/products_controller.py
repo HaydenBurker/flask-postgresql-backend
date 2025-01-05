@@ -2,7 +2,36 @@ import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
-from models.products import create_product_object
+from models.products import base_product_object
+from models.categories import base_category_object
+from models.users import base_user_object
+from util.validate_uuid import validate_uuid4
+
+def create_product_object(product):
+    product = base_product_object(product)
+    product_id = product.get("product_id")
+    created_by_id = product.get("created_by_id")
+    created_by_user = created_by_id
+    categories = []
+
+    if created_by_id:
+        create_by_id_query = """SELECT user_id, first_name, last_name, email, active FROM "Users"
+        WHERE user_id = %s"""
+        cursor.execute(create_by_id_query, (created_by_id,))
+        user = cursor.fetchone()
+        created_by_user = base_user_object(user)
+
+    categories_query = """SELECT "Categories".category_id, "Categories".name FROM "Categories"
+    INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
+    WHERE "ProductsCategoriesXref".product_id = %s"""
+    cursor.execute(categories_query, (product_id,))
+    categories = cursor.fetchall()
+    categories = [base_category_object(category) for category in categories]
+
+    del product["created_by_id"]
+    product["created_by"] = created_by_user
+    product["categories"] = categories
+    return product
 
 def add_product():
     post_data = request.json
@@ -29,6 +58,8 @@ def get_all_products():
     return jsonify({"message": "products found", "results": products}), 200
 
 def get_product_by_id(product_id):
+    if not validate_uuid4(product_id):
+        return jsonify({"message": "invalid product id"}), 400
     get_by_id_query = """SELECT * FROM "Products"
     WHERE product_id = %s"""
     cursor.execute(get_by_id_query, (product_id,))
@@ -39,6 +70,8 @@ def get_product_by_id(product_id):
     return jsonify({"message": "product found", "results": create_product_object(product)}), 200
 
 def update_product(product_id):
+    if not validate_uuid4(product_id):
+        return jsonify({"message": "invalid product id"}), 400
     post_data = request.json
 
     get_by_id_query = """SELECT * FROM "Products"
@@ -65,6 +98,8 @@ def update_product(product_id):
     return jsonify({"message": "product updated", "results": create_product_object(product)}), 200
 
 def delete_product(product_id):
+    if not validate_uuid4(product_id):
+        return jsonify({"message": "invalid product id"}), 400
     get_by_id_query = """SELECT product_id FROM "Products"
     WHERE product_id = %s"""
     cursor.execute(get_by_id_query, (product_id,))
@@ -92,6 +127,12 @@ def product_add_category():
     product_id = post_data.get("product_id")
     category_id = post_data.get("category_id")
 
+    if not validate_uuid4(product_id):
+        return jsonify({"message": "invalid product id"}), 400
+
+    if not validate_uuid4(category_id):
+        return jsonify({"message": "invalid category id"}), 400
+
     product_query = """SELECT * FROM "Products"
     WHERE product_id = %s"""
     cursor.execute(product_query, (product_id,))
@@ -117,4 +158,4 @@ def product_add_category():
         connection.rollback()
         return jsonify({"message": "cannot add category to product"}), 400
 
-    return jsonify({"message": "category added to product", "results": create_product_object(product)})
+    return jsonify({"message": "category added to product", "results": create_product_object(product)}), 200
