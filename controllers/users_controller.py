@@ -6,6 +6,8 @@ from models.users import base_user_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
 
+table_name = "Users"
+
 def create_user_object(user):
     user = base_user_object(user)
     user_id = user.get("user_id")
@@ -23,7 +25,7 @@ def create_user_object(user):
 def add_user():
     post_data = request.json
 
-    insert_query = """INSERT INTO "Users" (user_id, first_name, last_name, email, password, active)
+    insert_query = f"""INSERT INTO "{table_name}" (user_id, first_name, last_name, email, password, active)
     VALUES (%s, %s, %s, %s, %s, %s) RETURNING user_id, first_name, last_name, email, active"""
 
     try:
@@ -37,7 +39,7 @@ def add_user():
     return jsonify({"message": "added user", "results": create_user_object(user)}), 201
 
 def get_all_users():
-    get_all_query = 'SELECT user_id, first_name, last_name, email, active FROM "Users"'
+    get_all_query = f'SELECT user_id, first_name, last_name, email, active FROM "{table_name}"'
     cursor.execute(get_all_query)
 
     users = cursor.fetchall()
@@ -48,7 +50,7 @@ def get_all_users():
 def get_user_by_id(user_id):
     if not validate_uuid4(user_id):
         return jsonify({"message": "invalid user id"}), 400
-    get_by_id_query = """SELECT user_id, first_name, last_name, email, active FROM "Users"
+    get_by_id_query = f"""SELECT user_id, first_name, last_name, email, active FROM "{table_name}"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
     user = cursor.fetchone()
@@ -61,7 +63,7 @@ def update_user(user_id):
     if not validate_uuid4(user_id):
         return jsonify({"message": "invalid user id"}), 400
     post_data = request.json
-    get_by_id_query = """SELECT * FROM "Users"
+    get_by_id_query = f"""SELECT * FROM "{table_name}"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
     user = cursor.fetchone()
@@ -70,7 +72,7 @@ def update_user(user_id):
 
     [user_id, first_name, last_name, email, password, active] = user
 
-    update_query = """UPDATE "Users"
+    update_query = f"""UPDATE "{table_name}"
     SET first_name = %s,
     last_name = %s,
     email = %s,
@@ -89,7 +91,7 @@ def update_user(user_id):
 def user_activity(user_id):
     if not validate_uuid4(user_id):
         return jsonify({"message": "invalid user id"}), 400
-    get_by_id_query = """SELECT active FROM "Users"
+    get_by_id_query = f"""SELECT active FROM "{table_name}"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
     user = cursor.fetchone()
@@ -98,7 +100,7 @@ def user_activity(user_id):
 
     [active] = user
 
-    activity_query = """UPDATE "Users"
+    activity_query = f"""UPDATE "{table_name}"
     SET active = %s
     WHERE user_id = %s RETURNING user_id, first_name, last_name, email, active"""
     active = not active
@@ -111,7 +113,7 @@ def user_activity(user_id):
 def delete_user(user_id):
     if not validate_uuid4(user_id):
         return jsonify({"message": "invalid user id"}), 400
-    get_by_id_query = """SELECT user_id FROM "Users"
+    get_by_id_query = f"""SELECT user_id FROM "{table_name}"
     WHERE user_id = %s"""
     cursor.execute(get_by_id_query, (user_id,))
     user = cursor.fetchone()
@@ -120,7 +122,7 @@ def delete_user(user_id):
 
     [user_id] = user
 
-    delete_query = """DELETE FROM "Users"
+    delete_query = f"""DELETE FROM "{table_name}"
     WHERE user_id = %s"""
     try:
         cursor.execute(delete_query, (user_id,))

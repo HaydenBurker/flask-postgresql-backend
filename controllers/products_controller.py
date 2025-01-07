@@ -7,6 +7,8 @@ from models.categories import base_category_object
 from models.users import base_user_object
 from util.validate_uuid import validate_uuid4
 
+table_name = "Products"
+
 def create_product_object(product):
     product = base_product_object(product)
     product_id = product.get("product_id")
@@ -36,7 +38,7 @@ def create_product_object(product):
 def add_product():
     post_data = request.json
 
-    insert_query = """INSERT INTO "Products"
+    insert_query = f"""INSERT INTO "{table_name}"
     VALUES (%s, %s, %s) RETURNING *"""
     try:
         cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("name"), post_data.get("created_by_id")))
@@ -49,7 +51,7 @@ def add_product():
     return jsonify({"message": "product added", "results": create_product_object(product)}), 201
 
 def get_all_products():
-    get_all_query = 'SELECT * FROM "Products"'
+    get_all_query = f'SELECT * FROM "{table_name}"'
     cursor.execute(get_all_query)
     products = cursor.fetchall()
 
@@ -60,7 +62,7 @@ def get_all_products():
 def get_product_by_id(product_id):
     if not validate_uuid4(product_id):
         return jsonify({"message": "invalid product id"}), 400
-    get_by_id_query = """SELECT * FROM "Products"
+    get_by_id_query = f"""SELECT * FROM "{table_name}"
     WHERE product_id = %s"""
     cursor.execute(get_by_id_query, (product_id,))
     product = cursor.fetchone()
@@ -74,7 +76,7 @@ def update_product(product_id):
         return jsonify({"message": "invalid product id"}), 400
     post_data = request.json
 
-    get_by_id_query = """SELECT * FROM "Products"
+    get_by_id_query = f"""SELECT * FROM "{table_name}"
     WHERE product_id = %s"""
     cursor.execute(get_by_id_query, (product_id,))
     product = cursor.fetchone()
@@ -83,7 +85,7 @@ def update_product(product_id):
 
     [product_id, name, created_by_id] = product
 
-    update_query = """UPDATE "Products"
+    update_query = f"""UPDATE "{table_name}"
     SET name = %s,
     created_by_id = %s
     WHERE product_id = %s RETURNING *"""
@@ -100,7 +102,7 @@ def update_product(product_id):
 def delete_product(product_id):
     if not validate_uuid4(product_id):
         return jsonify({"message": "invalid product id"}), 400
-    get_by_id_query = """SELECT product_id FROM "Products"
+    get_by_id_query = f"""SELECT product_id FROM "{table_name}"
     WHERE product_id = %s"""
     cursor.execute(get_by_id_query, (product_id,))
     product = cursor.fetchone()
@@ -109,7 +111,7 @@ def delete_product(product_id):
 
     [product_id] = product
 
-    delete_query = """DELETE FROM "Products"
+    delete_query = f"""DELETE FROM "{table_name}"
     WHERE product_id = %s"""
     try:
         cursor.execute(delete_query, (product_id,))
