@@ -2,6 +2,7 @@ import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
+from .base_controller import add_record
 from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
@@ -36,19 +37,7 @@ def create_product_object(product):
     return product
 
 def add_product():
-    post_data = request.json
-
-    insert_query = f"""INSERT INTO "{table_name}"
-    VALUES (%s, %s, %s) RETURNING *"""
-    try:
-        cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("name"), post_data.get("created_by_id")))
-        product = cursor.fetchone()
-        connection.commit()
-    except:
-        connection.rollback()
-        return jsonify({"message": "unable to add product"}), 400
-
-    return jsonify({"message": "product added", "results": create_product_object(product)}), 201
+    return add_record(table_name, ["name", "created_by_id"], ["product_id", "name", "created_by_id"], create_product_object)
 
 def get_all_products():
     get_all_query = f'SELECT * FROM "{table_name}"'

@@ -2,25 +2,14 @@ import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
+from .base_controller import add_record
 from models.categories import base_category_object
 from util.validate_uuid import validate_uuid4
 
 table_name = "Categories"
 
 def add_category():
-    post_data = request.json
-
-    insert_query = f"""INSERT INTO "{table_name}"
-    VALUES (%s, %s) RETURNING *"""
-    try:
-        cursor.execute(insert_query, (str(uuid.uuid4()), post_data.get("name")))
-        category = cursor.fetchone()
-        connection.commit()
-    except:
-        connection.rollback()
-        return jsonify({"message": "unable to add category"}), 400
-
-    return jsonify({"message": "category added", "results": base_category_object(category)}), 201
+    return add_record(table_name, ["name"], ["category_id", "name"], base_category_object)
 
 def get_all_categories():
     get_all_query = f'SELECT * FROM "{table_name}"'
