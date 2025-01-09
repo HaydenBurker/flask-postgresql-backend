@@ -1,24 +1,19 @@
-import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record
+from .base_controller import add_record, get_all_records
 from models.categories import base_category_object
 from util.validate_uuid import validate_uuid4
 
 table_name = "Categories"
+post_data_fields = ["name"]
+return_fields = ["category_id", "name"]
 
 def add_category():
-    return add_record(table_name, ["name"], ["category_id", "name"], base_category_object)
+    return add_record(table_name, post_data_fields, return_fields, base_category_object)
 
 def get_all_categories():
-    get_all_query = f'SELECT * FROM "{table_name}"'
-    cursor.execute(get_all_query)
-    categories = cursor.fetchall()
-
-    categories = [base_category_object(category) for category in categories]
-
-    return jsonify({"message": "categories found", "results": categories}), 200
+    return get_all_records(table_name, return_fields, base_category_object)
 
 def get_category_by_id(category_id):
     if not validate_uuid4(category_id):

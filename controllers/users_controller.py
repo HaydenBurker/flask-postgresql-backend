@@ -1,12 +1,14 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record
+from .base_controller import add_record, get_all_records
 from models.users import base_user_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
 
 table_name = "Users"
+post_data_fields = ["first_name", "last_name", "email", "password", "active"]
+return_fields = ["user_id", "first_name", "last_name", "email", "active"]
 
 def create_user_object(user):
     user = base_user_object(user)
@@ -23,16 +25,10 @@ def create_user_object(user):
     return user
 
 def add_user():
-    return add_record(table_name, ["first_name", "last_name", "email", "password", "active"], ["user_id", "first_name", "last_name", "email", "active"], create_user_object)
+    return add_record(table_name, post_data_fields, return_fields, create_user_object)
 
 def get_all_users():
-    get_all_query = f'SELECT user_id, first_name, last_name, email, active FROM "{table_name}"'
-    cursor.execute(get_all_query)
-
-    users = cursor.fetchall()
-    users = [create_user_object(user) for user in users]
-
-    return jsonify({"message": "users found", "results": users}), 200
+    return get_all_records(table_name, return_fields, create_user_object)
 
 def get_user_by_id(user_id):
     if not validate_uuid4(user_id):

@@ -17,3 +17,12 @@ def add_record(table_name, post_data_fields, return_fields, create_record_object
         return jsonify({"message": "unable to add record"}), 400
 
     return jsonify({"message": "added record", "results": create_record_object(record)}), 201
+
+def get_all_records(table_name, return_fields, create_record_object):
+    get_all_query = f'SELECT {",".join(return_fields)} FROM "{table_name}"'
+    cursor.execute(get_all_query)
+
+    records = cursor.fetchall()
+    records = [create_record_object(record) for record in records]
+
+    return jsonify({"message": "records found", "results": records}), 200

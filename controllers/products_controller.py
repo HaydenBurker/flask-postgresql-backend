@@ -1,14 +1,15 @@
-import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record
+from .base_controller import add_record, get_all_records
 from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
 from util.validate_uuid import validate_uuid4
 
 table_name = "Products"
+post_data_fields = ["name", "created_by_id"]
+return_fields = ["product_id", "name", "created_by_id"]
 
 def create_product_object(product):
     product = base_product_object(product)
@@ -37,16 +38,10 @@ def create_product_object(product):
     return product
 
 def add_product():
-    return add_record(table_name, ["name", "created_by_id"], ["product_id", "name", "created_by_id"], create_product_object)
+    return add_record(table_name, post_data_fields, return_fields, create_product_object)
 
 def get_all_products():
-    get_all_query = f'SELECT * FROM "{table_name}"'
-    cursor.execute(get_all_query)
-    products = cursor.fetchall()
-
-    products = [create_product_object(product) for product in products]
-
-    return jsonify({"message": "products found", "results": products}), 200
+    return get_all_records(table_name, return_fields, create_product_object)
 
 def get_product_by_id(product_id):
     if not validate_uuid4(product_id):
