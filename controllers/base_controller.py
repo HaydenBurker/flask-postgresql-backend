@@ -39,3 +39,29 @@ def get_record_by_id(record_id, table_name, return_fields, create_record_object)
         return jsonify({"message": "record not found"}), 404
 
     return jsonify({"message": "record found", "results": create_record_object(record)}), 200
+
+def update_record(record_id, table_name, post_data_fields, return_fields, create_record_object):
+    if not validate_uuid4(record_id):
+        return jsonify({"message": "invalid record id"}), 400
+    post_data = request.json
+    get_by_id_query = f"""SELECT {",".join(post_data_fields)} FROM "{table_name}"
+    WHERE {return_fields[0]} = %s"""
+    cursor.execute(get_by_id_query, (record_id,))
+    record = cursor.fetchone()
+    if not record:
+        return jsonify({"message": "record not found"}), 404
+
+    update_fields = ",".join(f"{field} = %s" for field in post_data_fields)
+
+    update_query = f"""UPDATE "{table_name}"
+    SET {update_fields}
+    WHERE {return_fields[0]} = %s RETURNING {",".join(return_fields)}"""
+
+    try:
+        cursor.execute(update_query, (*[post_data.get(field, value) for (field, value) in zip(post_data_fields, record)], record_id))
+        record = cursor.fetchone()
+        connection.commit()
+    except:
+        connection.rollback()
+        return jsonify({"message": "unable to update record"}), 400
+    return jsonify({"message": "record updated", "results": create_record_object(record)}), 200

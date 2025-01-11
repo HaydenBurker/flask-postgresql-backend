@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records, get_record_by_id
+from .base_controller import add_record, get_all_records, get_record_by_id, update_record
 from models.users import base_user_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
@@ -34,33 +34,7 @@ def get_user_by_id(user_id):
     return get_record_by_id(user_id, table_name, return_fields, create_user_object)
 
 def update_user(user_id):
-    if not validate_uuid4(user_id):
-        return jsonify({"message": "invalid user id"}), 400
-    post_data = request.json
-    get_by_id_query = f"""SELECT * FROM "{table_name}"
-    WHERE user_id = %s"""
-    cursor.execute(get_by_id_query, (user_id,))
-    user = cursor.fetchone()
-    if not user:
-        return jsonify({"message": "user not found"}), 404
-
-    [user_id, first_name, last_name, email, password, active] = user
-
-    update_query = f"""UPDATE "{table_name}"
-    SET first_name = %s,
-    last_name = %s,
-    email = %s,
-    password = %s
-    WHERE user_id = %s RETURNING user_id, first_name, last_name, email, active"""
-
-    try:
-        cursor.execute(update_query, (post_data.get("first_name") or first_name, post_data.get("last_name") or last_name, post_data.get("email") or email, post_data.get("password") or password, user_id))
-        user = cursor.fetchone()
-        connection.commit()
-    except:
-        connection.rollback()
-        return jsonify({"message": "unable to update user"}), 400
-    return jsonify({"message": "user updated", "results": create_user_object(user)}), 200
+    return update_record(user_id, table_name, post_data_fields[:-1], return_fields, create_user_object)
 
 def user_activity(user_id):
     if not validate_uuid4(user_id):

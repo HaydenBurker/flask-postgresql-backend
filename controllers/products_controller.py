@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records, get_record_by_id
+from .base_controller import add_record, get_all_records, get_record_by_id, update_record
 from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
@@ -47,32 +47,7 @@ def get_product_by_id(product_id):
     return get_record_by_id(product_id, table_name, return_fields, create_product_object)
 
 def update_product(product_id):
-    if not validate_uuid4(product_id):
-        return jsonify({"message": "invalid product id"}), 400
-    post_data = request.json
-
-    get_by_id_query = f"""SELECT * FROM "{table_name}"
-    WHERE product_id = %s"""
-    cursor.execute(get_by_id_query, (product_id,))
-    product = cursor.fetchone()
-    if not product:
-        return jsonify({"message": "product not found"}), 404
-
-    [product_id, name, created_by_id] = product
-
-    update_query = f"""UPDATE "{table_name}"
-    SET name = %s,
-    created_by_id = %s
-    WHERE product_id = %s RETURNING *"""
-    try:
-        cursor.execute(update_query, (post_data.get("name", name), post_data.get("created_by_id", created_by_id), product_id))
-        product = cursor.fetchone()
-        connection.commit()
-    except:
-        connection.rollback()
-        return jsonify({"message": "unable to update product"}), 400
-
-    return jsonify({"message": "product updated", "results": create_product_object(product)}), 200
+    return update_record(product_id, table_name, post_data_fields, return_fields, create_product_object)
 
 def delete_product(product_id):
     if not validate_uuid4(product_id):
