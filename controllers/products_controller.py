@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records
+from .base_controller import add_record, get_all_records, get_record_by_id
 from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
@@ -44,16 +44,7 @@ def get_all_products():
     return get_all_records(table_name, return_fields, create_product_object)
 
 def get_product_by_id(product_id):
-    if not validate_uuid4(product_id):
-        return jsonify({"message": "invalid product id"}), 400
-    get_by_id_query = f"""SELECT * FROM "{table_name}"
-    WHERE product_id = %s"""
-    cursor.execute(get_by_id_query, (product_id,))
-    product = cursor.fetchone()
-    if not product:
-        return jsonify({"message": "product not found"}), 404
-
-    return jsonify({"message": "product found", "results": create_product_object(product)}), 200
+    return get_record_by_id(product_id, table_name, return_fields, create_product_object)
 
 def update_product(product_id):
     if not validate_uuid4(product_id):

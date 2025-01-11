@@ -2,6 +2,7 @@ import uuid
 from flask import request, jsonify
 
 from db import connection, cursor
+from util.validate_uuid import validate_uuid4
 
 def add_record(table_name, post_data_fields, return_fields, create_record_object):
     post_data = request.json
@@ -26,3 +27,15 @@ def get_all_records(table_name, return_fields, create_record_object):
     records = [create_record_object(record) for record in records]
 
     return jsonify({"message": "records found", "results": records}), 200
+
+def get_record_by_id(record_id, table_name, return_fields, create_record_object):
+    if not validate_uuid4(record_id):
+        return jsonify({"message": "invalid record id"}), 400
+    get_by_id_query = f"""SELECT {",".join(return_fields)} FROM "{table_name}"
+    WHERE {return_fields[0]} = %s"""
+    cursor.execute(get_by_id_query, (record_id,))
+    record = cursor.fetchone()
+    if not record:
+        return jsonify({"message": "record not found"}), 404
+
+    return jsonify({"message": "record found", "results": create_record_object(record)}), 200

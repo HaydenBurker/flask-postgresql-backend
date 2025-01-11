@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records
+from .base_controller import add_record, get_all_records, get_record_by_id
 from models.users import base_user_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
@@ -31,16 +31,7 @@ def get_all_users():
     return get_all_records(table_name, return_fields, create_user_object)
 
 def get_user_by_id(user_id):
-    if not validate_uuid4(user_id):
-        return jsonify({"message": "invalid user id"}), 400
-    get_by_id_query = f"""SELECT user_id, first_name, last_name, email, active FROM "{table_name}"
-    WHERE user_id = %s"""
-    cursor.execute(get_by_id_query, (user_id,))
-    user = cursor.fetchone()
-    if not user:
-        return jsonify({"message": "user not found"}), 404
-
-    return jsonify({"message": "user found", "results": create_user_object(user)}), 200
+    return get_record_by_id(user_id, table_name, return_fields, create_user_object)
 
 def update_user(user_id):
     if not validate_uuid4(user_id):

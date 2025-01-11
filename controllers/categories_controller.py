@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records
+from .base_controller import add_record, get_all_records, get_record_by_id
 from models.categories import base_category_object
 from util.validate_uuid import validate_uuid4
 
@@ -16,16 +16,7 @@ def get_all_categories():
     return get_all_records(table_name, return_fields, base_category_object)
 
 def get_category_by_id(category_id):
-    if not validate_uuid4(category_id):
-        return jsonify({"message": "invalid category id"}), 400
-    get_by_id_query = f"""SELECT * FROM "{table_name}"
-    WHERE category_id = %s"""
-    cursor.execute(get_by_id_query, (category_id,))
-    category = cursor.fetchone()
-    if not category:
-        return jsonify({"message": "category not found"}), 404
-
-    return jsonify({"message": "category found", "results": base_category_object(category)}), 200
+    return get_record_by_id(category_id, table_name, return_fields, base_category_object)
 
 def update_category(category_id):
     if not validate_uuid4(category_id):
