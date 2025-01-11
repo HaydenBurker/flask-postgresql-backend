@@ -65,3 +65,48 @@ def update_record(record_id, table_name, post_data_fields, return_fields, create
         connection.rollback()
         return jsonify({"message": "unable to update record"}), 400
     return jsonify({"message": "record updated", "results": create_record_object(record)}), 200
+
+def record_activity(record_id, table_name, return_fields, create_record_object, active_field="active"):
+    if not validate_uuid4(record_id):
+        return jsonify({"message": "invalid record id"}), 400
+    get_by_id_query = f"""SELECT {active_field} FROM "{table_name}"
+    WHERE {return_fields[0]} = %s"""
+    cursor.execute(get_by_id_query, (record_id,))
+    record = cursor.fetchone()
+    if not record:
+        return jsonify({"message": "record not found"}), 404
+
+    [active] = record
+
+    activity_query = f"""UPDATE "{table_name}"
+    SET {active_field} = %s
+    WHERE {return_fields[0]} = %s RETURNING {",".join(return_fields)}"""
+    active = not active
+    cursor.execute(activity_query, (active, record_id))
+    record = cursor.fetchone()
+    connection.commit()
+
+    return jsonify({"message": f"record {'activated' if active else 'deactivated'}", "results": create_record_object(record)}), 200
+
+def delete_record(record_id, table_name, primary_key):
+    if not validate_uuid4(record_id):
+        return jsonify({"message": "invalid record id"}), 400
+    get_by_id_query = f"""SELECT {primary_key} FROM "{table_name}"
+    WHERE {primary_key} = %s"""
+    cursor.execute(get_by_id_query, (record_id,))
+    record = cursor.fetchone()
+    if not record:
+        return jsonify({"message": "record not found"}), 404
+
+    [record_id] = record
+
+    delete_query = f"""DELETE FROM "{table_name}"
+    WHERE {primary_key} = %s"""
+    try:
+        cursor.execute(delete_query, (record_id,))
+        connection.commit()
+    except:
+        connection.rollback()
+        return jsonify({"message": "unable to delete record"}), 400
+
+    return jsonify({"message": "record deleted"}), 200

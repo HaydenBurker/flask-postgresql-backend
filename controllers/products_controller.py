@@ -1,7 +1,7 @@
 from flask import request, jsonify
 
 from db import connection, cursor
-from .base_controller import add_record, get_all_records, get_record_by_id, update_record
+from .base_controller import add_record, get_all_records, get_record_by_id, update_record, delete_record
 from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
@@ -50,27 +50,7 @@ def update_product(product_id):
     return update_record(product_id, table_name, post_data_fields, return_fields, create_product_object)
 
 def delete_product(product_id):
-    if not validate_uuid4(product_id):
-        return jsonify({"message": "invalid product id"}), 400
-    get_by_id_query = f"""SELECT product_id FROM "{table_name}"
-    WHERE product_id = %s"""
-    cursor.execute(get_by_id_query, (product_id,))
-    product = cursor.fetchone()
-    if not product:
-        return jsonify({"message": "product not found"}), 404
-
-    [product_id] = product
-
-    delete_query = f"""DELETE FROM "{table_name}"
-    WHERE product_id = %s"""
-    try:
-        cursor.execute(delete_query, (product_id,))
-        connection.commit()
-    except:
-        connection.rollback()
-        return jsonify({"message": "unable to delete product"}), 400
-
-    return jsonify({"message": "deleted product"}), 200
+    return delete_record(product_id, table_name, return_fields[0])
 
 def product_add_category():
     post_data = request.json
