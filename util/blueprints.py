@@ -1,9 +1,9 @@
 
-from routes.users_routes import users
-from routes.products_routes import products
-from routes.categories_routes import categories
+from routes.users_routes import users_routes
+from routes.products_routes import products_routes
+from routes.categories_routes import categories_routes
 
 def register_blueprints(app):
-    app.register_blueprint(users)
-    app.register_blueprint(products)
-    app.register_blueprint(categories)
+    app.register_blueprint(users_routes.blueprint)
+    app.register_blueprint(products_routes.blueprint)
+    app.register_blueprint(categories_routes.blueprint)
