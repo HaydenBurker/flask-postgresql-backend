@@ -21,5 +21,6 @@ def create_user_object(user):
 class UsersController(BaseController):
     table_name = "Users"
     post_data_fields = ["first_name", "last_name", "email", "password", "active"]
+    default_values = ["", "", "", "", True]
     return_fields = ["user_id", "first_name", "last_name", "email", "active"]
     create_record_object = lambda _, user: create_user_object(user)

@@ -7,6 +7,7 @@ from util.validate_uuid import validate_uuid4
 class BaseController:
     table_name = None
     post_data_fields = []
+    default_values = []
     return_fields = []
     create_record_object = None
 
@@ -19,7 +20,7 @@ class BaseController:
         insert_query = f"""INSERT INTO "{self.table_name}"
         VALUES (%s,{",".join(["%s" for _ in self.post_data_fields])}) RETURNING {",".join(self.return_fields)}"""
         try:
-            cursor.execute(insert_query, (str(uuid.uuid4()), *[post_data.get(field) for field in self.post_data_fields]))
+            cursor.execute(insert_query, (str(uuid.uuid4()), *[post_data.get(field, default) for field, default in zip(self.post_data_fields, self.default_values)]))
             record = cursor.fetchone()
             connection.commit()
         except:

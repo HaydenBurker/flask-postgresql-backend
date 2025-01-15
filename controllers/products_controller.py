@@ -37,6 +37,7 @@ def create_product_object(product):
 class ProductsController(BaseController):
     table_name = "Products"
     post_data_fields = ["name", "created_by_id"]
+    default_values = ["", None]
     return_fields = ["product_id", "name", "created_by_id"]
     create_record_object = lambda _, product: create_product_object(product)
 
