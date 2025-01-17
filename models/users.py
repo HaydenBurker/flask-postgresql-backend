@@ -7,6 +7,8 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
     email VARCHAR NOT NULL,
     password VARCHAR NOT NULL,
     active BOOLEAN NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     UNIQUE (email),
     PRIMARY KEY (user_id)
 )""")
