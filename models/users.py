@@ -16,11 +16,13 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
 connection.commit()
 
 def base_user_object(user):
-    [user_id, first_name, last_name, email, active] = user
+    [user_id, first_name, last_name, email, active, created_at, updated_at] = user
     return {
         "user_id": user_id,
         "first_name": first_name,
         "last_name": last_name,
         "email": email,
-        "active": active
+        "active": active,
+        "created_at": str(created_at),
+        "updated_at": str(updated_at)
     }

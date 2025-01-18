@@ -11,8 +11,9 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
 connection.commit()
 
 def base_category_object(category):
-    [category_id, name] = category
+    [category_id, name, description] = category
     return {
         "category_id": category_id,
         "name": name,
+        "description": description
     }

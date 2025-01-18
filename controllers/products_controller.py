@@ -16,13 +16,13 @@ def create_product_object(product):
     categories = []
 
     if created_by_id:
-        create_by_id_query = """SELECT user_id, first_name, last_name, email, active FROM "Users"
+        create_by_id_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
         WHERE user_id = %s"""
         cursor.execute(create_by_id_query, (created_by_id,))
         user = cursor.fetchone()
         created_by_user = base_user_object(user)
 
-    categories_query = """SELECT "Categories".category_id, "Categories".name FROM "Categories"
+    categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description FROM "Categories"
     INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
     WHERE "ProductsCategoriesXref".product_id = %s"""
     cursor.execute(categories_query, (product_id,))
@@ -36,9 +36,9 @@ def create_product_object(product):
 
 class ProductsController(BaseController):
     table_name = "Products"
-    post_data_fields = ["name", "created_by_id"]
-    default_values = ["", None]
-    return_fields = ["product_id", "name", "created_by_id"]
+    post_data_fields = ["name", "description", "price", "stock_quantity", "created_by_id"]
+    default_values = ["", "", 0, 0, None, None, None]
+    return_fields = ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"]
     create_record_object = lambda _, product: create_product_object(product)
 
     def product_add_category(self):
