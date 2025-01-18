@@ -14,3 +14,17 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
 )""")
 
 connection.commit()
+
+def base_order_object(order):
+    [order_id, customer_id, shipping_date, status, total_amount, active, created_at, updated_at] = order
+
+    return {
+        "order_id": order_id,
+        "customer_id": customer_id,
+        "shipping_date": shipping_date and str(shipping_date),
+        "status": status,
+        "total_amount": total_amount,
+        "active": active,
+        "created_at": str(created_at),
+        "updated_at": str(updated_at)
+    }
