@@ -62,8 +62,6 @@ class OrdersController(BaseController):
         [discount_id] = discount
         if not discount:
             return jsonify({"message": "discount not found"}), 404
-        
-        print(order_id, discount_id)
 
         order_add_discount_query = """INSERT INTO "OrdersDiscountsXref" (order_id, discount_id)
         VALUES (%s, %s)"""
