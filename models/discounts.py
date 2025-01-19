@@ -12,3 +12,16 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Discounts" (
 )""")
 
 connection.commit()
+
+def base_discount_object(discount):
+    [discount_id, discount_code, discount_type, discount_value, start_date, end_date, min_order_amount] = discount
+
+    return {
+        "discount_id": discount_id,
+        "discount_code": discount_code,
+        "discount_type": discount_type,
+        "discount_value": discount_value,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "min_order_amount": min_order_amount,
+    }

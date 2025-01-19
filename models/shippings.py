@@ -14,3 +14,19 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Shippings" (
 )""")
 
 connection.commit()
+
+def base_shipping_object(shipping):
+    [shipping_id, order_id, shipping_address, shipping_label, shipping_cost, tracking_number, shipping_status, shipped_date] = shipping
+
+    print(type(shipped_date))
+
+    return {
+        "shipping_id": shipping_id,
+        "order_id": order_id,
+        "shipping_address": shipping_address,
+        "shipping_label": shipping_label,
+        "shipping_cost": shipping_cost,
+        "tracking_number": tracking_number,
+        "shipping_status": shipping_status,
+        "shipped_date": shipped_date and shipped_date.isoformat()
+    }
