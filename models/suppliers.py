@@ -13,3 +13,16 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Suppliers" (
 )""")
 
 connection.commit()
+
+def base_supplier_object(supplier):
+    [supplier_id, company_name, contact_name, email, phone_number, address, active] = supplier
+
+    return {
+        "supplier_id": supplier_id,
+        "company_name": company_name,
+        "contact_name": contact_name,
+        "email": email,
+        "phone_number": phone_number,
+        "address": address,
+        "active": active
+    }
