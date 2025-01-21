@@ -10,11 +10,13 @@ def create_review_object(review):
     customer_id = review.get("customer_id")
     product_id = review.get("product_id")
 
-    user_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
-    WHERE user_id = %s"""
-    cursor.execute(user_query, (customer_id,))
-    user = cursor.fetchone()
-    user = base_user_object(user)
+    user = None
+    if customer_id:
+        user_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+        WHERE user_id = %s"""
+        cursor.execute(user_query, (customer_id,))
+        user = cursor.fetchone()
+        user = base_user_object(user)
     review["customer"] = user
     del review["customer_id"]
 
