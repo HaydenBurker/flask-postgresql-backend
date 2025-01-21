@@ -5,7 +5,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
     customer_id UUID NOT NULL,
     shipping_date TIMESTAMP WITH TIME ZONE,
     status VARCHAR NOT NULL,
-    total_amount VARCHAR NOT NULL,
+    total_amount INTEGER NOT NULL,
     active BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -25,6 +25,6 @@ def base_order_object(order):
         "status": status,
         "total_amount": total_amount,
         "active": active,
-        "created_at": str(created_at),
-        "updated_at": str(updated_at)
+        "created_at": created_at.isoformat(),
+        "updated_at": updated_at.isoformat()
     }

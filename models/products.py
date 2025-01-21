@@ -25,6 +25,6 @@ def base_product_object(product):
         "price": price,
         "stock_quantity": stock_quantity,
         "created_by_id": created_by_id,
-        "created_at": str(created_at),
-        "updated_at": str(updated_at)
+        "created_at": created_at.isoformat(),
+        "updated_at": updated_at.isoformat()
     }

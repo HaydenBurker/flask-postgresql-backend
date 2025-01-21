@@ -23,6 +23,6 @@ def base_user_object(user):
         "last_name": last_name,
         "email": email,
         "active": active,
-        "created_at": str(created_at),
-        "updated_at": str(updated_at)
+        "created_at": created_at.isoformat(),
+        "updated_at": updated_at.isoformat()
     }

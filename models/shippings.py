@@ -26,5 +26,5 @@ def base_shipping_object(shipping):
         "shipping_cost": shipping_cost,
         "tracking_number": tracking_number,
         "shipping_status": shipping_status,
-        "shipped_date": shipped_date and shipped_date.isoformat()
+        "shipped_date": shipped_date.isoformat()
     }
