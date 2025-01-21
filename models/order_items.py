@@ -13,3 +13,15 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "OrderItems" (
 )""")
 
 connection.commit()
+
+def base_order_item_object(order_item):
+    [order_item_id, order_id, product_id, quantity, unit_price, total_price] = order_item
+
+    return {
+        "order_item_id": order_item_id,
+        "order_id": order_id,
+        "product_id": product_id,
+        "quantity": quantity,
+        "unit_price": unit_price,
+        "total_price": total_price
+    }
