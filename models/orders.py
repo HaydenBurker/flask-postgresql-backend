@@ -10,7 +10,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (order_id),
-    FOREIGN KEY (customer_id) REFERENCES "Users" (user_id)
+    FOREIGN KEY (customer_id) REFERENCES "Users" (user_id) ON DELETE CASCADE
 )""")
 
 connection.commit()

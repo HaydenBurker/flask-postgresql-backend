@@ -8,7 +8,7 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
     payment_status VARCHAR NOT NULL,
     payment_amount NUMERIC NOT NULL,
     PRIMARY KEY (payment_id),
-    FOREIGN KEY (order_id) REFERENCES "Orders" (order_id)
+    FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE
 )""")
 
 connection.commit()
