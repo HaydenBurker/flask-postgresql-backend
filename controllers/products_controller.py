@@ -29,6 +29,12 @@ def create_product_object(product):
     categories = cursor.fetchall()
     categories = [base_category_object(category) for category in categories]
 
+    rating_query = """SELECT AVG(rating) from "Reviews"
+    WHERE product_id = %s"""
+    cursor.execute(rating_query, (product_id,))
+    [rating] = cursor.fetchone()
+    product["rating"] = rating
+
     del product["created_by_id"]
     product["created_by"] = created_by_user
     product["categories"] = categories
