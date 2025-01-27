@@ -1,9 +1,11 @@
 import uuid
+import types
 from flask import request, jsonify
 from datetime import datetime, timezone
 
 from db import connection, cursor
 from util.validate_uuid import validate_uuid4
+from util.datetime import datetime_now
 
 class BaseController:
     table_name = None
@@ -18,7 +20,7 @@ class BaseController:
     def add_record(self):
         post_data = request.json
         insert_fields = self.post_data_fields.copy()
-        current_datetime = datetime.now(timezone.utc)
+        current_datetime = datetime_now()
 
         if "created_at" in self.return_fields:
             insert_fields.append("created_at")
@@ -30,7 +32,7 @@ class BaseController:
         insert_query = f"""INSERT INTO "{self.table_name}"
         VALUES (%s,{",".join(["%s" for _ in insert_fields])}) RETURNING {",".join(self.return_fields)}"""
         try:
-            cursor.execute(insert_query, (str(uuid.uuid4()), *[post_data.get(field, value) for field, value in zip(insert_fields, self.default_values)]))
+            cursor.execute(insert_query, (str(uuid.uuid4()), *[post_data.get(field, value() if isinstance(value, types.FunctionType) else value) for field, value in zip(insert_fields, self.default_values)]))
             record = cursor.fetchone()
             connection.commit()
         except:
@@ -68,7 +70,7 @@ class BaseController:
 
         if "updated_at" in self.return_fields:
             update_fields.append("updated_at")
-            post_data["updated_at"] = datetime.now(timezone.utc)
+            post_data["updated_at"] = datetime_now()
 
         get_by_id_query = f"""SELECT {",".join(update_fields)} FROM "{self.table_name}"
         WHERE {self.primary_key} = %s"""
