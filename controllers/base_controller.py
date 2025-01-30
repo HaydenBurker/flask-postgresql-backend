@@ -46,7 +46,10 @@ class BaseController:
         cursor.execute(get_all_query)
 
         records = cursor.fetchall()
-        records = [self.create_record_object(record) for record in records]
+        if self.table_name == "Users":
+            records = self.create_record_object(records, many=True)
+        else:
+            records = [self.create_record_object(record) for record in records]
 
         return jsonify({"message": "records found", "results": records}), 200
 
