@@ -5,36 +5,25 @@ from models.products import base_product_object
 
 
 def create_user_object(user, many=False):
-    if many:
-        users = [base_user_object(u) for u in user]
-        user_ids = tuple([user["user_id"] for user in users])
+    users = [base_user_object(u) for u in user] if many else base_user_object(user)
+    user_ids = tuple([user["user_id"] for user in users]) if many == True else users.get("user_id")
 
-        if user_ids:
-            products_query = """SELECT * FROM "Products"
-            WHERE created_by_id IN %s"""
-            cursor.execute(products_query, (user_ids,))
-            products = cursor.fetchall()
-            products = [base_product_object(product) for product in products]
-            products = {product["product_id"]: product for product in products}
-        else:
-            products = []
-
-        for i, user in enumerate(users):
-            users[i]["products"] = [product for product in products.values() if product["created_by_id"] == user["user_id"]]
-        return users
-    else:
-        user = base_user_object(user)
-        user_id = user.get("user_id")
-        products = []
-
-        products_query = """SELECT * FROM "Products"
-        WHERE created_by_id = %s"""
-        cursor.execute(products_query, (user_id,))
+    if user_ids:
+        products_query = f"""SELECT * FROM "Products"
+        WHERE created_by_id {"IN" if many else "="} %s"""
+        cursor.execute(products_query, (user_ids,))
         products = cursor.fetchall()
         products = [base_product_object(product) for product in products]
+        user_products = {product.get("created_by_id"): [] for product in products}
+        for product in products:
+            user_products[product.get("created_by_id")].append(product)
 
-        user["products"] = products
-        return user
+    if many:
+        for i, user in enumerate(users):
+            users[i]["products"] = user_products.get(user["user_id"], [])
+    else:
+        users["products"] = user_products.get(users["user_id"], [])
+    return users
 
 class UsersController(BaseController):
     table_name = "Users"
