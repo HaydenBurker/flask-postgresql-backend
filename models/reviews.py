@@ -1,5 +1,7 @@
 from db import connection, cursor
 
+from util.records import base_record_object
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Reviews" (
     review_id UUID NOT NULL,
     customer_id UUID,
@@ -15,13 +17,4 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Reviews" (
 connection.commit()
 
 def base_review_object(review):
-    [review_id, customer_id, product_id, rating, comment, created_at] = review
-
-    return {
-        "review_id": review_id,
-        "customer_id": customer_id,
-        "product_id": product_id,
-        "rating": rating,
-        "comment": comment,
-        "created_at": created_at.isoformat()
-    }
+    return base_record_object(review, ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"])

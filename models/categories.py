@@ -1,5 +1,7 @@
 from db import connection, cursor
 
+from util.records import base_record_object
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
     category_id UUID NOT NULL,
     name VARCHAR NOT NULL UNIQUE,
@@ -11,9 +13,4 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
 connection.commit()
 
 def base_category_object(category):
-    [category_id, name, description] = category
-    return {
-        "category_id": category_id,
-        "name": name,
-        "description": description
-    }
+    return base_record_object(category, ["category_id", "name", "description"])

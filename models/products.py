@@ -1,5 +1,7 @@
 from db import connection, cursor
 
+from util.records import base_record_object
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
     product_id UUID NOT NULL,
     name VARCHAR NOT NULL UNIQUE,
@@ -17,14 +19,4 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
 connection.commit()
 
 def base_product_object(product):
-    [product_id, name, description, price, stock_quantity, created_by_id, created_at, updated_at] = product
-    return {
-        "product_id": product_id,
-        "name": name,
-        "description": description,
-        "price": price,
-        "stock_quantity": stock_quantity,
-        "created_by_id": created_by_id,
-        "created_at": created_at.isoformat(),
-        "updated_at": updated_at.isoformat()
-    }
+    return base_record_object(product, ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"])
