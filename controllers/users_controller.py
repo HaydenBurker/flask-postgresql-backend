@@ -2,21 +2,14 @@ from db import cursor
 from .base_controller import BaseController
 from models.users import base_user_object
 from models.products import base_product_object
+from util.records import get_nested_records
 
 
 def create_user_object(user, many=False):
     users = [base_user_object(u) for u in user] if many else base_user_object(user)
     user_ids = tuple([user["user_id"] for user in users]) if many == True else users.get("user_id")
 
-    if user_ids:
-        products_query = f"""SELECT * FROM "Products"
-        WHERE created_by_id {"IN" if many else "="} %s"""
-        cursor.execute(products_query, (user_ids,))
-        products = cursor.fetchall()
-        products = [base_product_object(product) for product in products]
-        user_products = {product.get("created_by_id"): [] for product in products}
-        for product in products:
-            user_products[product.get("created_by_id")].append(product)
+    user_products = get_nested_records(cursor, many, user_ids, "Products", "created_by_id", base_product_object)
 
     if many:
         for i, user in enumerate(users):
