@@ -7,4 +7,4 @@ class CategoriesController(BaseController):
     post_data_fields = ["name", "description"]
     default_values = ["", ""]
     return_fields = ["category_id", "name", "description"]
-    create_record_object = lambda _, category: base_category_object(category)
+    create_record_object = lambda _, category_data, many=False: [base_category_object(category) for category in category_data] if many else base_category_object(category_data)

@@ -6,46 +6,49 @@ from models.products import base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
 from util.validate_uuid import validate_uuid4
+from util.records import create_record_mapping
 
 
-def create_product_object(product):
-    product = base_product_object(product)
-    product_id = product.get("product_id")
-    created_by_id = product.get("created_by_id")
-    created_by_user = created_by_id
-    categories = []
+def create_product_object(product_data, many=False):
+    products = [base_product_object(product) for product in product_data] if many else [base_product_object(product_data)]
+    product_ids = tuple(product["product_id"] for product in products)
+    created_by_ids = tuple(product["created_by_id"] for product in products)
 
-    if created_by_id:
-        create_by_id_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
-        WHERE user_id = %s"""
-        cursor.execute(create_by_id_query, (created_by_id,))
-        user = cursor.fetchone()
-        created_by_user = base_user_object(user)
+    users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+    WHERE user_id IN %s"""
+    cursor.execute(users_query, (created_by_ids,))
+    users = cursor.fetchall()
+    product_user_mapping = create_record_mapping(users, base_user_object, key="user_id")
 
-    categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description FROM "Categories"
+    categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
     INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
-    WHERE "ProductsCategoriesXref".product_id = %s"""
-    cursor.execute(categories_query, (product_id,))
+    WHERE "ProductsCategoriesXref".product_id IN %s"""
+    cursor.execute(categories_query, (product_ids,))
     categories = cursor.fetchall()
-    categories = [base_category_object(category) for category in categories]
+    product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
 
-    rating_query = """SELECT AVG(rating) from "Reviews"
-    WHERE product_id = %s"""
-    cursor.execute(rating_query, (product_id,))
-    [rating] = cursor.fetchone()
-    product["rating"] = rating
+    ratings_query = """SELECT AVG(rating), product_id FROM "Reviews"
+    WHERE product_id in %s
+    GROUP BY product_id"""
+    cursor.execute(ratings_query, (product_ids,))
+    ratings = cursor.fetchall()
+    product_rating_mapping = create_record_mapping(ratings, lambda record: record[0])
 
-    del product["created_by_id"]
-    product["created_by"] = created_by_user
-    product["categories"] = categories
-    return product
+    for i, product in enumerate(products):
+        product_id = product["product_id"]
+        products[i]["created_by_user"] = product_user_mapping.get(product["created_by_id"])
+        products[i]["categories"] = product_category_mapping.get(product_id, [])
+        products[i]["rating"] = product_rating_mapping.get(product_id)
+        del products[i]["created_by_id"]
+
+    return products if many else products[0]
 
 class ProductsController(BaseController):
     table_name = "Products"
     post_data_fields = ["name", "description", "price", "stock_quantity", "created_by_id"]
     default_values = ["", "", 0, 0, None, None, None]
     return_fields = ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"]
-    create_record_object = lambda _, product: create_product_object(product)
+    create_record_object = lambda _, product, many=False: create_product_object(product, many)
 
     def product_add_category(self):
         post_data = request.json

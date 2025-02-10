@@ -6,37 +6,42 @@ from models.orders import base_order_object
 from models.users import base_user_object
 from models.discounts import base_discount_object
 from util.validate_uuid import validate_uuid4
+from util.records import create_record_mapping
 
 
-def create_order_object(order):
-    order = base_order_object(order)
-    order_id = order.get("order_id")
-    customer_id = order.get("customer_id")
+def create_order_object(order_data, many=False):
+    orders = [base_order_object(order) for order in order_data] if many else [base_order_object(order_data)]
+    order_ids = tuple(order["order_id"] for order in orders)
+    customer_ids = tuple(order["customer_id"] for order in orders)
 
-    create_by_id_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
-    WHERE user_id = %s"""
-    cursor.execute(create_by_id_query, (customer_id,))
-    user = cursor.fetchone()
-    customer = base_user_object(user)
+    users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+    WHERE user_id IN %s"""
+    cursor.execute(users_query, (customer_ids,))
+    users = cursor.fetchall()
 
-    discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount FROM "Discounts"
+    order_user_mapping = create_record_mapping(users, base_user_object, key="user_id", many=False)
+
+    discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
     INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
-    WHERE "OrdersDiscountsXref".order_id = %s"""
-    cursor.execute(discounts_query, (order_id,))
+    WHERE "OrdersDiscountsXref".order_id IN %s"""
+    cursor.execute(discounts_query, (order_ids,))
     discounts = cursor.fetchall()
-    discounts = [base_discount_object(discount) for discount in discounts]
 
-    del order["customer_id"]
-    order["customer"] = customer
-    order["discounts"] = discounts
-    return order
+    order_discount_mapping = create_record_mapping(discounts, base_discount_object, many=True)
+
+    for i, order in enumerate(orders):
+        orders[i]["customer"] = order_user_mapping.get(order["customer_id"], [])
+        orders[i]["discounts"] = order_discount_mapping.get(order["order_id"], [])
+        del orders[i]["customer_id"]
+
+    return orders if many else orders[0]
 
 class OrdersController(BaseController):
     table_name = "Orders"
     post_data_fields = ["customer_id", "shipping_date", "status", "total_amount", "active"]
     default_values = [None, None, "", 0, True, None, None]
     return_fields = ["order_id", "customer_id", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"]
-    create_record_object = lambda _, order: create_order_object(order)
+    create_record_object = lambda _, order, many=False: create_order_object(order, many)
 
     def order_add_discount(self):
         post_data = request.json
@@ -44,7 +49,6 @@ class OrdersController(BaseController):
         order_id = post_data.get("order_id")
         if not validate_uuid4(order_id):
             return jsonify({"message": "invalid order id"}), 400
-        order_id = "e7f99f48-9fac-4b70-8ef0-ced51b6ff9dc"
         order_query = """SELECT * FROM "Orders"
         WHERE order_id = %s"""
         cursor.execute(order_query, (order_id,))
