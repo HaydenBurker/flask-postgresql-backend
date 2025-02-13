@@ -1,1 +1,6 @@
 .env
+
+csv/import/*
+!csv/import/.gitkeep
+csv/export/*
+!csv/export/.gitkeep
