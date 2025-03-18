@@ -38,8 +38,8 @@ def create_order_object(order_data, many=False):
 
 class OrdersController(BaseController):
     table_name = "Orders"
-    post_data_fields = ["customer_id", "shipping_date", "status", "total_amount", "active"]
-    default_values = [None, None, "", 0, True, None, None]
+    post_data_fields = ["customer_id", "order_date", "shipping_date", "status", "total_amount", "active"]
+    default_values = [None, None, None, "", 0, True, None, None]
     return_fields = ["order_id", "customer_id", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"]
     create_record_object = lambda _, order, many=False: create_order_object(order, many)
 

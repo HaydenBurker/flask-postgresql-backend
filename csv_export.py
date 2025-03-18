@@ -4,7 +4,8 @@ import csv
 from db import cursor
 
 table_fields = {
-    "Users": ["user_id", "first_name", "last_name", "email", "password", "active", "created_at", "updated_at"]
+    "Users": ["user_id", "first_name", "last_name", "email", "password", "active", "created_at", "updated_at"],
+    "Orders": ["order_id", "customer_id", "order_date", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"]
 }
 
 def export_table(table_name, fields, file_name):

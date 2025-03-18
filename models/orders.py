@@ -5,6 +5,7 @@ from util.records import base_record_object
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
     order_id UUID NOT NULL,
     customer_id UUID NOT NULL,
+    order_date TIMESTAMP WITH TIME ZONE,
     shipping_date TIMESTAMP WITH TIME ZONE,
     status VARCHAR NOT NULL,
     total_amount INTEGER NOT NULL,
@@ -18,4 +19,4 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
 connection.commit()
 
 def base_order_object(order):
-    return base_record_object(order, ["order_id", "customer_id", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"])
+    return base_record_object(order, ["order_id", "customer_id", "order_date", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"])
