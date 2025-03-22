@@ -1,5 +1,7 @@
 from db import connection, cursor
 
+from util.records import base_record_object
+
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
     payment_id UUID NOT NULL,
     order_id UUID NOT NULL,
@@ -12,3 +14,6 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
 )""")
 
 connection.commit()
+
+def base_payment_object(payment):
+    return base_record_object(payment, ["payment_id", "order_id", "payment_method", "payment_date", "payment_status", "payment_amount"])
