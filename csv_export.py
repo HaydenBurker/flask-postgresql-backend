@@ -8,7 +8,14 @@ table_fields = {
     "Orders": ["order_id", "customer_id", "order_date", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"],
     "Payments": ["payment_id", "order_id", "payment_method", "payment_date", "payment_status", "payment_amount"],
     "OrdersDiscountsXref": ["order_id", "discount_id"],
-    "Discounts": ["discount_id", "discount_code", "discount_type", "start_date", "end_date", "min_order_amount"]
+    "Discounts": ["discount_id", "discount_code", "discount_type", "start_date", "end_date", "min_order_amount"],
+    "OrderItems": ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "total_price"],
+    "Products": ["product_id", "name", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"],
+    "ProductsCategoriesXref": ["product_id", "category_id"],
+    "Categories": ["category_id", "name", "description"],
+    "Reviews": ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"],
+    "ProductSuppliers": ["product_id", "supplier_id", "supply_price", "supply_date"],
+    "Suppliers": ["supplier_id", "company_name", "contact_name", "email", "phone_number", "address", "active"]
 }
 
 def export_table(table_name, fields, file_name):
