@@ -6,7 +6,9 @@ from db import cursor
 table_fields = {
     "Users": ["user_id", "first_name", "last_name", "email", "password", "active", "created_at", "updated_at"],
     "Orders": ["order_id", "customer_id", "order_date", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"],
-    "Payments": ["payment_id", "order_id", "payment_method", "payment_date", "payment_status", "payment_amount"]
+    "Payments": ["payment_id", "order_id", "payment_method", "payment_date", "payment_status", "payment_amount"],
+    "OrdersDiscountsXref": ["order_id", "discount_id"],
+    "Discounts": ["discount_id", "discount_code", "discount_type", "start_date", "end_date", "min_order_amount"]
 }
 
 def export_table(table_name, fields, file_name):
