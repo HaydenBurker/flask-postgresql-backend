@@ -9,15 +9,16 @@ def create_user_object(user_data, many=False):
     users = [base_user_object(user) for user in user_data] if many else [base_user_object(user_data)]
     user_ids = tuple([user["user_id"] for user in users])
 
-    products_query = """SELECT * FROM "Products"
-    WHERE created_by_id in %s"""
-    cursor.execute(products_query, (user_ids,))
-    products = cursor.fetchall()
-    user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
+    if user_ids:
+        products_query = """SELECT * FROM "Products"
+        WHERE created_by_id in %s"""
+        cursor.execute(products_query, (user_ids,))
+        products = cursor.fetchall()
+        user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
 
-    for i, user in enumerate(users):
-        user_id = user["user_id"]
-        users[i]["products"] = user_product_mapping.get(user_id, [])
+        for i, user in enumerate(users):
+            user_id = user["user_id"]
+            users[i]["products"] = user_product_mapping.get(user_id, [])
 
     return users if many else users[0]
 
