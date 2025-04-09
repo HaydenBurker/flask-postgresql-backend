@@ -14,18 +14,22 @@ def create_order_object(order_data, many=False):
     order_ids = tuple(order["order_id"] for order in orders)
     customer_ids = tuple(order["customer_id"] for order in orders)
 
-    users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
-    WHERE user_id IN %s"""
-    cursor.execute(users_query, (customer_ids,))
-    users = cursor.fetchall()
+    users = []
+    if customer_ids:
+        users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+        WHERE user_id IN %s"""
+        cursor.execute(users_query, (customer_ids,))
+        users = cursor.fetchall()
 
     order_user_mapping = create_record_mapping(users, base_user_object, key="user_id", many=False)
 
-    discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
-    INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
-    WHERE "OrdersDiscountsXref".order_id IN %s"""
-    cursor.execute(discounts_query, (order_ids,))
-    discounts = cursor.fetchall()
+    discounts = []
+    if order_ids:
+        discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
+        INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
+        WHERE "OrdersDiscountsXref".order_id IN %s"""
+        cursor.execute(discounts_query, (order_ids,))
+        discounts = cursor.fetchall()
 
     order_discount_mapping = create_record_mapping(discounts, base_discount_object, many=True)
 

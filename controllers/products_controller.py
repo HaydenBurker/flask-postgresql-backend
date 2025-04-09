@@ -14,24 +14,30 @@ def create_product_object(product_data, many=False):
     product_ids = tuple(product["product_id"] for product in products)
     created_by_ids = tuple(product["created_by_id"] for product in products)
 
-    users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
-    WHERE user_id IN %s"""
-    cursor.execute(users_query, (created_by_ids,))
-    users = cursor.fetchall()
+    users = []
+    if created_by_ids:
+        users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+        WHERE user_id IN %s"""
+        cursor.execute(users_query, (created_by_ids,))
+        users = cursor.fetchall()
     product_user_mapping = create_record_mapping(users, base_user_object, key="user_id")
 
-    categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
-    INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
-    WHERE "ProductsCategoriesXref".product_id IN %s"""
-    cursor.execute(categories_query, (product_ids,))
-    categories = cursor.fetchall()
+    categories = []
+    if product_ids:
+        categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
+        INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
+        WHERE "ProductsCategoriesXref".product_id IN %s"""
+        cursor.execute(categories_query, (product_ids,))
+        categories = cursor.fetchall()
     product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
 
-    ratings_query = """SELECT AVG(rating), product_id FROM "Reviews"
-    WHERE product_id in %s
-    GROUP BY product_id"""
-    cursor.execute(ratings_query, (product_ids,))
-    ratings = cursor.fetchall()
+    ratings = []
+    if product_ids:
+        ratings_query = """SELECT AVG(rating), product_id FROM "Reviews"
+        WHERE product_id in %s
+        GROUP BY product_id"""
+        cursor.execute(ratings_query, (product_ids,))
+        ratings = cursor.fetchall()
     product_rating_mapping = create_record_mapping(ratings, lambda record: record[0])
 
     for i, product in enumerate(products):

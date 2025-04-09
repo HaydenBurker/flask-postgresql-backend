@@ -13,10 +13,12 @@ def create_supplier_object(supplier_data, many=False):
     suppliers = [base_supplier_object(supplier) for supplier in supplier_data] if many else [base_supplier_object(supplier_data)]
     supplier_ids = tuple(supplier["supplier_id"] for supplier in suppliers)
 
-    product_supplier_query = """SELECT * FROM "ProductSuppliers"
-    WHERE supplier_id IN %s"""
-    cursor.execute(product_supplier_query, (supplier_ids,))
-    product_suppliers = cursor.fetchall()
+    product_suppliers = []
+    if supplier_ids:
+        product_supplier_query = """SELECT * FROM "ProductSuppliers"
+        WHERE supplier_id IN %s"""
+        cursor.execute(product_supplier_query, (supplier_ids,))
+        product_suppliers = cursor.fetchall()
     supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="supplier_id", many=True)
 
     product_ids = []
