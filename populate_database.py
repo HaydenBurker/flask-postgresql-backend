@@ -18,8 +18,23 @@ def populate_database():
     current_date = datetime_now()
 
     records = []
+    user_ids = []
     for _ in range(user_count):
-        records += [str(uuid.uuid4()), random_letters(), random_letters(), random_letters(), random_letters(), True, current_date, current_date]
+        id = str(uuid.uuid4())
+        user_ids.append(id)
+        records += [id, random_letters(), random_letters(), random_letters(), random_letters(), True, current_date, current_date]
+    cursor.execute(query, records)
+
+    query = """INSERT INTO "Orders" (order_id, customer_id, order_date, shipping_date, status, total_amount, active, created_at, updated_at) VALUES"""
+    values = "(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    query += ",".join(values for _ in range(user_count))
+
+    records = []
+    order_ids = []
+    for user_id in user_ids:
+        id = str(uuid.uuid4())
+        order_ids.append(id)
+        records += [id, user_id, current_date, current_date, random_letters(), random.randint(1, 10), True, current_date, current_date]
 
     cursor.execute(query, records)
     connection.commit()
