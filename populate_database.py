@@ -22,7 +22,7 @@ def populate_database():
     for _ in range(user_count):
         id = str(uuid.uuid4())
         user_ids.append(id)
-        records += [id, random_letters(), random_letters(), random_letters(), random_letters(), True, current_date, current_date]
+        records += [id, random_letters(), random_letters(), random_letters() + "@" + random_letters() + "." + random_letters(), random_letters(), True, current_date, current_date]
     cursor.execute(query, records)
 
     query = """INSERT INTO "Orders" (order_id, customer_id, order_date, shipping_date, status, total_amount, active, created_at, updated_at) VALUES"""
@@ -36,6 +36,18 @@ def populate_database():
         order_ids.append(id)
         records += [id, user_id, current_date, current_date, random_letters(), random.randint(1, 10), True, current_date, current_date]
 
+    cursor.execute(query, records)
+
+    query = """INSERT INTO "Products" (product_id, name, description, price, stock_quantity, created_by_id, created_at, updated_at) VALUES"""
+    values = "(%s, %s, %s, %s, %s, %s, %s, %s)"
+    query += ",".join(values for _ in range(user_count))
+
+    records = []
+    product_ids = []
+    for user_id in user_ids:
+        id = str(uuid.uuid4())
+        product_ids.append(id)
+        records += [id, random_letters(), random_letters(), random.randint(1, 10), random.randint(0, 10), user_id, current_date, current_date]
     cursor.execute(query, records)
     connection.commit()
 
