@@ -49,6 +49,18 @@ def populate_database():
         product_ids.append(id)
         records += [id, random_letters(), random_letters(), random.randint(1, 10), random.randint(0, 10), user_id, current_date, current_date]
     cursor.execute(query, records)
+
+    query = """INSERT INTO "OrderItems" (order_item_id, order_id, product_id, quantity, unit_price) VALUES"""
+    values = "(%s, %s, %s, %s, %s)"
+    query += ",".join(values for _ in range(20))
+
+    records = []
+    for _ in range(20):
+        order_id = random.choice(order_ids)
+        product_id = random.choice(product_ids)
+        order_item_id = str(uuid.uuid4())
+        records += [order_item_id, order_id, product_id, random.randint(1, 10), random.randint(1, 10)]
+    cursor.execute(query, records)
     connection.commit()
 
 if __name__ == "__main__":
