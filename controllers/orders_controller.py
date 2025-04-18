@@ -11,8 +11,8 @@ from util.records import create_record_mapping
 
 def create_order_object(order_data, many=False):
     orders = [base_order_object(order) for order in order_data] if many else [base_order_object(order_data)]
-    order_ids = tuple(order["order_id"] for order in orders)
-    customer_ids = tuple(order["customer_id"] for order in orders)
+    order_ids = tuple(set(order["order_id"] for order in orders))
+    customer_ids = tuple(set(order["customer_id"] for order in orders))
 
     users = []
     if customer_ids:

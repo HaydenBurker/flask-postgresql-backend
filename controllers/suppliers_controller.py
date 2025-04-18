@@ -11,7 +11,7 @@ from util.records import create_record_mapping
 
 def create_supplier_object(supplier_data, many=False):
     suppliers = [base_supplier_object(supplier) for supplier in supplier_data] if many else [base_supplier_object(supplier_data)]
-    supplier_ids = tuple(supplier["supplier_id"] for supplier in suppliers)
+    supplier_ids = tuple(set(supplier["supplier_id"] for supplier in suppliers))
 
     product_suppliers = []
     if supplier_ids:

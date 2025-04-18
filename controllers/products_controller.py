@@ -11,8 +11,8 @@ from util.records import create_record_mapping
 
 def create_product_object(product_data, many=False):
     products = [base_product_object(product) for product in product_data] if many else [base_product_object(product_data)]
-    product_ids = tuple(product["product_id"] for product in products)
-    created_by_ids = tuple(product["created_by_id"] for product in products)
+    product_ids = tuple(set(product["product_id"] for product in products))
+    created_by_ids = tuple(set(product["created_by_id"] for product in products))
 
     users = []
     if created_by_ids:

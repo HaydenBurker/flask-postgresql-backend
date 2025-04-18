@@ -8,8 +8,8 @@ from util.records import create_record_mapping
 
 def create_order_item_object(order_item_data, many=False):
     order_items = [base_order_item_object(o) for o in order_item_data] if many else [base_order_item_object(order_item_data)]
-    order_ids = tuple(order["order_id"] for order in order_items)
-    product_ids = tuple(order["product_id"] for order in order_items)
+    order_ids = tuple(set(order["order_id"] for order in order_items))
+    product_ids = tuple(set(order["product_id"] for order in order_items))
 
     if order_items:
         orders_query = """SELECT * FROM "Orders"

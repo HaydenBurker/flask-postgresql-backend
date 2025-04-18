@@ -7,7 +7,7 @@ from util.records import create_record_mapping
 
 def create_user_object(user_data, many=False):
     users = [base_user_object(user) for user in user_data] if many else [base_user_object(user_data)]
-    user_ids = tuple([user["user_id"] for user in users])
+    user_ids = tuple(set(user["user_id"] for user in users))
 
     if user_ids:
         products_query = """SELECT * FROM "Products"

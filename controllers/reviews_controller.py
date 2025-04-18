@@ -8,8 +8,8 @@ from util.records import create_record_mapping
 
 def create_review_object(review_data, many=False):
     reviews = [base_review_object(review) for review in review_data] if many else [base_review_object(review_data)]
-    customer_ids = tuple(review["customer_id"] for review in reviews)
-    product_ids = tuple(review["product_id"] for review in reviews)
+    customer_ids = tuple(set(review["customer_id"] for review in reviews))
+    product_ids = tuple(set(review["product_id"] for review in reviews))
 
     users = []
     if customer_ids:
