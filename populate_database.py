@@ -61,6 +61,16 @@ def populate_database():
         order_item_id = str(uuid.uuid4())
         records += [order_item_id, order_id, product_id, random.randint(1, 10), random.randint(1, 10)]
     cursor.execute(query, records)
+
+    query = """INSERT INTO "Categories" (category_id, name, description) VALUES"""
+    values = "(%s, %s, %s)"
+    query += ",".join(values for _ in range(10))
+
+    records = []
+    for _ in range(10):
+        category_id = str(uuid.uuid4())
+        records += [category_id, random_letters(), random_letters()]
+    cursor.execute(query, records)
     connection.commit()
 
 if __name__ == "__main__":
