@@ -71,10 +71,26 @@ def populate_database():
     create_records(records, "OrderItems")
 
     records = []
+    category_ids = []
     for _ in range(10):
         category_id = str(uuid.uuid4())
+        category_ids.append(category_id)
         records += [category_id, random_letters(), random_letters()]
     create_records(records, "Categories")
+
+    records = []
+    product_category_ids = set()
+    for _ in range(20):
+        product_id = random.choice(product_ids)
+        category_id = random.choice(category_ids)
+
+        id = (product_id, category_id)
+        if id in product_category_ids:
+            continue
+
+        product_category_ids.add(id)
+        records += [*id]
+    create_records(records, "ProductsCategoriesXref")
     connection.commit()
 
 if __name__ == "__main__":
