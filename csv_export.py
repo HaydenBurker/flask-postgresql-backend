@@ -11,7 +11,7 @@ table_fields = {
     "OrdersDiscountsXref": ["order_id", "discount_id"],
     "Discounts": ["discount_id", "discount_code", "discount_type", "discount_value", "start_date", "end_date", "min_order_amount"],
     "OrderItems": ["order_item_id", "order_id", "product_id", "quantity", "unit_price"],
-    "Products": ["product_id", "name", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"],
+    "Products": ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"],
     "ProductsCategoriesXref": ["product_id", "category_id"],
     "Categories": ["category_id", "name", "description"],
     "Reviews": ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"],

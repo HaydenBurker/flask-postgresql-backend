@@ -35,8 +35,8 @@ table_fields = {
         "default_values": [None, None, None, 0, 0]
     },
     "Products": {
-        "fields": ["product_id", "name", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"],
-        "default_values": [None, "", 0, 0, None, None, None]
+        "fields": ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"],
+        "default_values": [None, "", "", 0, 0, None, None, None]
     },
     "ProductsCategoriesXref": {
         "fields": ["product_id", "category_id"],
