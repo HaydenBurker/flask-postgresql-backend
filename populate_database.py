@@ -125,6 +125,14 @@ def populate_database():
         payment_id = str(uuid.uuid4())
         records += [payment_id, order_id, random_letters(), current_date, random_letters(), random.randint(1, 10)]
     create_records(records, "Payments")
+
+    records = []
+    for _ in range(20):
+        review_id = str(uuid.uuid4())
+        customer_id = random.choice(user_ids)
+        product_id = random.choice(product_ids)
+        records += [review_id, customer_id, product_id, random.randint(1, 5), random_letters(), current_date]
+    create_records(records, "Reviews")
     connection.commit()
 
 if __name__ == "__main__":
