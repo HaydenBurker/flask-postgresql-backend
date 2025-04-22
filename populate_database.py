@@ -22,7 +22,7 @@ table_fields = {
 }
 
 def random_letters():
-    random_length = random.randint(3, 10)
+    random_length = random.randint(8, 15)
     return "".join(random.choice((string.ascii_lowercase)) for _ in range(random_length))
 
 def create_records(records, table_name):
@@ -133,6 +133,28 @@ def populate_database():
         product_id = random.choice(product_ids)
         records += [review_id, customer_id, product_id, random.randint(1, 5), random_letters(), current_date]
     create_records(records, "Reviews")
+
+    records = []
+    supplier_ids = []
+    for _ in range(10):
+        supplier_id = str(uuid.uuid4())
+        supplier_ids.append(supplier_id)
+        records += [supplier_id, random_letters(), random_letters(), random_letters(), random_letters(), random_letters(), True]
+    create_records(records, "Suppliers")
+
+    records = []
+    product_supplier_ids = set()
+    for _ in range(20):
+        product_id = random.choice(product_ids)
+        supplier_id = random.choice(supplier_ids)
+
+        id = (product_id, supplier_id)
+        if id in product_supplier_ids:
+            continue
+
+        product_supplier_ids.add(id)
+        records += [*id, random.randint(1, 10), current_date]
+    create_records(records, "ProductSuppliers")
     connection.commit()
 
 if __name__ == "__main__":
