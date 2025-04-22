@@ -91,6 +91,28 @@ def populate_database():
         product_category_ids.add(id)
         records += [*id]
     create_records(records, "ProductsCategoriesXref")
+
+    records = []
+    discount_ids = []
+    for _ in range(10):
+        discount_id = str(uuid.uuid4())
+        discount_ids.append(discount_id)
+        records += [discount_id, random_letters(), random_letters(), random.randint(1, 10), current_date, current_date, random.randint(1, 10)]
+    create_records(records, "Discounts")
+
+    records = []
+    order_disount_ids = set()
+    for _ in range(20):
+        order_id = random.choice(order_ids)
+        discount_id = random.choice(discount_ids)
+
+        id = (order_id, discount_id)
+        if id in order_disount_ids:
+            continue
+
+        order_disount_ids.add(id)
+        records += [*id]
+    create_records(records, "OrdersDiscountsXref")
     connection.commit()
 
 if __name__ == "__main__":
