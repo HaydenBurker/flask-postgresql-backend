@@ -113,6 +113,18 @@ def populate_database():
         order_disount_ids.add(id)
         records += [*id]
     create_records(records, "OrdersDiscountsXref")
+
+    records = []
+    for order_id in order_ids:
+        shipping_id = str(uuid.uuid4())
+        records += [shipping_id, order_id, random_letters(), random_letters(), random.randint(1, 10), random_letters(), random_letters(), current_date]
+    create_records(records, "Shippings")
+
+    records = []
+    for order_id in order_ids:
+        payment_id = str(uuid.uuid4())
+        records += [payment_id, order_id, random_letters(), current_date, random_letters(), random.randint(1, 10)]
+    create_records(records, "Payments")
     connection.commit()
 
 if __name__ == "__main__":
