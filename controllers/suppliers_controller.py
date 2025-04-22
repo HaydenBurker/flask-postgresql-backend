@@ -21,9 +21,9 @@ def create_supplier_object(supplier_data, many=False):
         product_suppliers = cursor.fetchall()
     supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="supplier_id", many=True)
 
-    product_ids = []
+    product_ids = set()
     for product_suppliers in supplier_product_supplier_mapping.values():
-        product_ids.extend(product_supplier["product_id"] for product_supplier in product_suppliers)
+        product_ids.update(product_supplier["product_id"] for product_supplier in product_suppliers)
 
     if product_ids:
         products_query = """SELECT * FROM "Products"
