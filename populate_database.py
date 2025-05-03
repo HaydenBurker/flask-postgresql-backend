@@ -48,16 +48,18 @@ def populate_database():
 
     records = []
     order_ids = []
-    for user_id in user_ids:
+    for _ in range(10):
         id = str(uuid.uuid4())
+        user_id = random.choice(user_ids)
         order_ids.append(id)
         records += [id, user_id, current_date, current_date, random_letters(), random.randint(1, 10), True, current_date, current_date]
     create_records(records, "Orders")
 
     records = []
     product_ids = []
-    for user_id in user_ids:
+    for _ in range(10):
         id = str(uuid.uuid4())
+        user_id = random.choice(user_ids)
         product_ids.append(id)
         records += [id, random_letters(), random_letters(), random.randint(1, 10), random.randint(0, 10), user_id, current_date, current_date]
     create_records(records, "Products")
