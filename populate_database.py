@@ -118,8 +118,9 @@ def populate_database():
 
     records = []
     for order_id in order_ids:
-        shipping_id = str(uuid.uuid4())
-        records += [shipping_id, order_id, random_letters(), random_letters(), random.randint(1, 10), random_letters(), random_letters(), current_date]
+        if random.randint(0, 1):
+            shipping_id = str(uuid.uuid4())
+            records += [shipping_id, order_id, random_letters(), random_letters(), random.randint(1, 10), random_letters(), random_letters(), current_date]
     create_records(records, "Shippings")
 
     records = []
