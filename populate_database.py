@@ -21,6 +21,21 @@ table_fields = {
     "Suppliers": ["supplier_id", "company_name", "contact_name", "email", "phone_number", "address", "active"]
 }
 
+class Total:
+    users = 5
+    orders = 10
+    products = 10
+    order_items = 20
+    categories = 10
+    products_categories = 20
+    discounts = 10
+    orders_discounts = 20
+    shippings = 5
+    payments = 10
+    reviews = 20
+    suppliers = 10
+    product_suppliers = 20
+
 def random_letters():
     random_length = random.randint(8, 15)
     return "".join(random.choice((string.ascii_lowercase)) for _ in range(random_length))
@@ -35,12 +50,11 @@ def create_records(records, table_name):
     cursor.execute(query, records)
 
 def populate_database():
-    user_count = 5
     current_date = datetime_now()
 
     records = []
     user_ids = []
-    for _ in range(user_count):
+    for _ in range(Total.users):
         id = str(uuid.uuid4())
         user_ids.append(id)
         records += [id, random_letters(), random_letters(), random_letters() + "@" + random_letters() + "." + random_letters(), random_letters(), True, current_date, current_date]
@@ -48,7 +62,7 @@ def populate_database():
 
     records = []
     order_ids = []
-    for _ in range(10):
+    for _ in range(Total.orders):
         id = str(uuid.uuid4())
         user_id = random.choice(user_ids)
         order_ids.append(id)
@@ -57,7 +71,7 @@ def populate_database():
 
     records = []
     product_ids = []
-    for _ in range(10):
+    for _ in range(Total.products):
         id = str(uuid.uuid4())
         user_id = random.choice(user_ids)
         product_ids.append(id)
@@ -65,7 +79,7 @@ def populate_database():
     create_records(records, "Products")
 
     records = []
-    for _ in range(20):
+    for _ in range(Total.order_items):
         order_id = random.choice(order_ids)
         product_id = random.choice(product_ids)
         order_item_id = str(uuid.uuid4())
@@ -82,7 +96,7 @@ def populate_database():
 
     records = []
     product_category_ids = set()
-    for _ in range(20):
+    for _ in range(Total.products_categories):
         product_id = random.choice(product_ids)
         category_id = random.choice(category_ids)
 
@@ -96,7 +110,7 @@ def populate_database():
 
     records = []
     discount_ids = []
-    for _ in range(10):
+    for _ in range(Total.discounts):
         discount_id = str(uuid.uuid4())
         discount_ids.append(discount_id)
         records += [discount_id, random_letters(), random_letters(), random.randint(1, 10), current_date, current_date, random.randint(1, 10)]
@@ -104,7 +118,7 @@ def populate_database():
 
     records = []
     order_disount_ids = set()
-    for _ in range(20):
+    for _ in range(Total.order_items):
         order_id = random.choice(order_ids)
         discount_id = random.choice(discount_ids)
 
@@ -117,21 +131,20 @@ def populate_database():
     create_records(records, "OrdersDiscountsXref")
 
     records = []
-    for order_id in order_ids:
-        if random.randint(0, 1):
-            shipping_id = str(uuid.uuid4())
-            records += [shipping_id, order_id, random_letters(), random_letters(), random.randint(1, 10), random_letters(), random_letters(), current_date]
+    for order_id in random.sample(order_ids, Total.shippings):
+        shipping_id = str(uuid.uuid4())
+        records += [shipping_id, order_id, random_letters(), random_letters(), random.randint(1, 10), random_letters(), random_letters(), current_date]
     create_records(records, "Shippings")
 
     records = []
-    for _ in range(10):
+    for _ in range(Total.payments):
         payment_id = str(uuid.uuid4())
         order_id = random.choice(order_ids)
         records += [payment_id, order_id, random_letters(), current_date, random_letters(), random.randint(1, 10)]
     create_records(records, "Payments")
 
     records = []
-    for _ in range(20):
+    for _ in range(Total.reviews):
         review_id = str(uuid.uuid4())
         customer_id = random.choice(user_ids)
         product_id = random.choice(product_ids)
@@ -140,7 +153,7 @@ def populate_database():
 
     records = []
     supplier_ids = []
-    for _ in range(10):
+    for _ in range(Total.suppliers):
         supplier_id = str(uuid.uuid4())
         supplier_ids.append(supplier_id)
         records += [supplier_id, random_letters(), random_letters(), random_letters(), random_letters(), random_letters(), True]
@@ -148,7 +161,7 @@ def populate_database():
 
     records = []
     product_supplier_ids = set()
-    for _ in range(20):
+    for _ in range(Total.product_suppliers):
         product_id = random.choice(product_ids)
         supplier_id = random.choice(supplier_ids)
 
