@@ -6,6 +6,7 @@ from models.categories import base_category_object
 from models.orders import base_order_object
 from models.shippings import base_shipping_object
 from models.payments import base_payment_object
+from models.product_suppliers import base_product_supplier_object
 from util.records import create_record_mapping
 
 
@@ -56,6 +57,14 @@ def create_user_object(user_data, many=False):
         payments = cursor.fetchall()
     order_payment_mapping = create_record_mapping(payments, base_payment_object, key="order_id", many=True)
 
+    product_suppliers = []
+    if product_ids:
+        product_supplier_query = """SELECT * FROM "ProductSuppliers"
+        WHERE product_id IN %s"""
+        cursor.execute(product_supplier_query, (product_ids,))
+        product_suppliers = cursor.fetchall()
+    supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="product_id", many=True)
+
     for i, user in enumerate(users):
         user_id = user["user_id"]
         users[i]["products"] = user_product_mapping.get(user_id, [])
@@ -64,8 +73,12 @@ def create_user_object(user_data, many=False):
         for product in users[i]["products"]:
             product_id = product["product_id"]
             product["categories"] = product_category_mapping.get(product_id, [])
+            product["suppliers"] = supplier_product_supplier_mapping.get(product["product_id"], [])
 
             del product["created_by_id"]
+
+            for supplier in product["suppliers"]:
+                del supplier["product_id"]
 
         for order in users[i]["orders"]:
             order_id = order["order_id"]
