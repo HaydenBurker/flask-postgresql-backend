@@ -5,8 +5,10 @@ from models.products import base_product_object
 from models.categories import base_category_object
 from models.orders import base_order_object
 from models.shippings import base_shipping_object
+from models.discounts import base_discount_object
 from models.payments import base_payment_object
 from models.product_suppliers import base_product_supplier_object
+from models.suppliers import base_supplier_object
 from util.records import create_record_mapping
 
 
@@ -21,14 +23,14 @@ def create_user_object(user_data, many=False):
         cursor.execute(products_query, (user_ids,))
         products = cursor.fetchall()
     user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
-    product_ids = tuple(set(product[0] for product in products))
+    supplier_ids = tuple(set(product[0] for product in products))
 
     categories = []
-    if product_ids:
+    if supplier_ids:
         categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
-        cursor.execute(categories_query, (product_ids,))
+        cursor.execute(categories_query, (supplier_ids,))
         categories = cursor.fetchall()
     product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
 
@@ -57,13 +59,33 @@ def create_user_object(user_data, many=False):
         payments = cursor.fetchall()
     order_payment_mapping = create_record_mapping(payments, base_payment_object, key="order_id", many=True)
 
+    if order_ids:
+        discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
+        INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
+        WHERE order_id IN %s"""
+        cursor.execute(discounts_query, (order_ids,))
+        discounts = cursor.fetchall()
+    order_discounts_mapping = create_record_mapping(discounts, base_discount_object, many=True)
+
     product_suppliers = []
-    if product_ids:
+    if supplier_ids:
         product_supplier_query = """SELECT * FROM "ProductSuppliers"
         WHERE product_id IN %s"""
-        cursor.execute(product_supplier_query, (product_ids,))
+        cursor.execute(product_supplier_query, (supplier_ids,))
         product_suppliers = cursor.fetchall()
     supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="product_id", many=True)
+
+    supplier_ids = set()
+    for product_suppliers in supplier_product_supplier_mapping.values():
+        supplier_ids.update(product_supplier["supplier_id"] for product_supplier in product_suppliers)
+
+    if supplier_ids:
+        suppliers_query = """SELECT * FROM "Suppliers"
+        WHERE supplier_id IN %s"""
+        cursor.execute(suppliers_query, (tuple(supplier_ids),))
+        suppliers = cursor.fetchall()
+        supplier_product_mapping = create_record_mapping(suppliers, base_supplier_object, key="supplier_id")
+
 
     for i, user in enumerate(users):
         user_id = user["user_id"]
@@ -73,17 +95,20 @@ def create_user_object(user_data, many=False):
         for product in users[i]["products"]:
             product_id = product["product_id"]
             product["categories"] = product_category_mapping.get(product_id, [])
-            product["suppliers"] = supplier_product_supplier_mapping.get(product["product_id"], [])
+            product["product_suppliers"] = supplier_product_supplier_mapping.get(product["product_id"], [])
 
             del product["created_by_id"]
 
-            for supplier in product["suppliers"]:
-                del supplier["product_id"]
+            for product_supplier in product["product_suppliers"]:
+                product_supplier["supplier"] = supplier_product_mapping.get(product_supplier["supplier_id"])
+                del product_supplier["product_id"]
+                del product_supplier["supplier_id"]
 
         for order in users[i]["orders"]:
             order_id = order["order_id"]
             order["shipping"] = order_shipping_mapping.get(order_id, None)
             order["payments"] = order_payment_mapping.get(order_id, [])
+            order["discounts"] = order_discounts_mapping.get(order_id, [])
 
             del order["customer_id"]
             if order["shipping"]:
