@@ -1,14 +1,18 @@
 from db import cursor
 from .base_controller import BaseController
-from models.users import base_user_object
-from models.products import base_product_object
-from models.categories import base_category_object
-from models.orders import base_order_object
-from models.shippings import base_shipping_object
-from models.discounts import base_discount_object
-from models.payments import base_payment_object
+
 from models.product_suppliers import base_product_supplier_object
+from models.order_items import base_order_item_object
+from models.categories import base_category_object
+from models.discounts import base_discount_object
+from models.shippings import base_shipping_object
 from models.suppliers import base_supplier_object
+from models.payments import base_payment_object
+from models.products import base_product_object
+from models.reviews import base_review_object
+from models.orders import base_order_object
+from models.users import base_user_object
+
 from util.records import create_record_mapping
 
 
@@ -23,14 +27,14 @@ def create_user_object(user_data, many=False):
         cursor.execute(products_query, (user_ids,))
         products = cursor.fetchall()
     user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
-    supplier_ids = tuple(set(product[0] for product in products))
+    product_ids = tuple(set(product[0] for product in products))
 
     categories = []
-    if supplier_ids:
+    if product_ids:
         categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
-        cursor.execute(categories_query, (supplier_ids,))
+        cursor.execute(categories_query, (product_ids,))
         categories = cursor.fetchall()
     product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
 
@@ -42,6 +46,14 @@ def create_user_object(user_data, many=False):
         orders = cursor.fetchall()
     user_order_mapping = create_record_mapping(orders, base_order_object, key="customer_id", many=True)
     order_ids = tuple(set(order[0] for order in orders))
+
+    reviews = []
+    if user_ids:
+        reviews_query = """SELECT review_id, customer_id, product_id, rating, comment, created_at FROM "Reviews"
+        WHERE customer_id IN %s"""
+        cursor.execute(reviews_query, (user_ids,))
+        reviews = cursor.fetchall()
+    user_reviews_mapping = create_record_mapping(reviews, base_review_object, key="customer_id", many=True)
 
     shippings = []
     if order_ids:
@@ -59,6 +71,7 @@ def create_user_object(user_data, many=False):
         payments = cursor.fetchall()
     order_payment_mapping = create_record_mapping(payments, base_payment_object, key="order_id", many=True)
 
+    discounts = []
     if order_ids:
         discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
@@ -67,11 +80,19 @@ def create_user_object(user_data, many=False):
         discounts = cursor.fetchall()
     order_discounts_mapping = create_record_mapping(discounts, base_discount_object, many=True)
 
+    order_items = []
+    if order_ids:
+        order_items_query = """SELECT * FROM "OrderItems"
+        WHERE order_id IN %s"""
+        cursor.execute(order_items_query, (order_ids,))
+        order_items = cursor.fetchall()
+    order_order_items_mapping = create_record_mapping(order_items, base_order_item_object, key="order_id", many=True)
+
     product_suppliers = []
-    if supplier_ids:
+    if product_ids:
         product_supplier_query = """SELECT * FROM "ProductSuppliers"
         WHERE product_id IN %s"""
-        cursor.execute(product_supplier_query, (supplier_ids,))
+        cursor.execute(product_supplier_query, (product_ids,))
         product_suppliers = cursor.fetchall()
     supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="product_id", many=True)
 
@@ -91,6 +112,7 @@ def create_user_object(user_data, many=False):
         user_id = user["user_id"]
         users[i]["products"] = user_product_mapping.get(user_id, [])
         users[i]["orders"] = user_order_mapping.get(user_id, [])
+        users[i]["reviews"] = user_reviews_mapping.get(user_id, [])
 
         for product in users[i]["products"]:
             product_id = product["product_id"]
@@ -109,12 +131,18 @@ def create_user_object(user_data, many=False):
             order["shipping"] = order_shipping_mapping.get(order_id, None)
             order["payments"] = order_payment_mapping.get(order_id, [])
             order["discounts"] = order_discounts_mapping.get(order_id, [])
+            order["order_items"] = order_order_items_mapping.get(order_id, [])
 
             del order["customer_id"]
             if order["shipping"]:
                 del order["shipping"]["order_id"]
             for payment in order["payments"]:
                 del payment["order_id"]
+            for order_item in order["order_items"]:
+                del order_item["order_id"]
+
+        for review in users[i]["reviews"]:
+            del review["customer_id"]
 
     return users if many else users[0]
 
