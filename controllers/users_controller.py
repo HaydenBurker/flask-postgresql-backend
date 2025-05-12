@@ -20,13 +20,23 @@ def create_user_object(user_data, many=False):
     users = [base_user_object(user) for user in user_data] if many else [base_user_object(user_data)]
     user_ids = tuple(set(user["user_id"] for user in users))
 
+    reviews = []
+    if user_ids:
+        reviews_query = """SELECT review_id, customer_id, product_id, rating, comment, created_at FROM "Reviews"
+        WHERE customer_id IN %s"""
+        cursor.execute(reviews_query, (user_ids,))
+        reviews = cursor.fetchall()
+    user_reviews_mapping = create_record_mapping(reviews, base_review_object, key="customer_id", many=True)
+
     products = []
     if user_ids:
+        review_product_ids = tuple(set(review[2] for review in reviews))
         products_query = """SELECT * FROM "Products"
-        WHERE created_by_id in %s"""
-        cursor.execute(products_query, (user_ids,))
+        WHERE created_by_id IN %s OR product_id IN %s"""
+        cursor.execute(products_query, (user_ids, review_product_ids))
         products = cursor.fetchall()
     user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
+    product_product_mapping = create_record_mapping(products, base_product_object, key="product_id")
     product_ids = tuple(set(product[0] for product in products))
 
     categories = []
@@ -46,14 +56,6 @@ def create_user_object(user_data, many=False):
         orders = cursor.fetchall()
     user_order_mapping = create_record_mapping(orders, base_order_object, key="customer_id", many=True)
     order_ids = tuple(set(order[0] for order in orders))
-
-    reviews = []
-    if user_ids:
-        reviews_query = """SELECT review_id, customer_id, product_id, rating, comment, created_at FROM "Reviews"
-        WHERE customer_id IN %s"""
-        cursor.execute(reviews_query, (user_ids,))
-        reviews = cursor.fetchall()
-    user_reviews_mapping = create_record_mapping(reviews, base_review_object, key="customer_id", many=True)
 
     shippings = []
     if order_ids:
@@ -142,7 +144,10 @@ def create_user_object(user_data, many=False):
                 del order_item["order_id"]
 
         for review in users[i]["reviews"]:
+            product_id = review["product_id"]
+            review["product"] = product_product_mapping.get(product_id, None)
             del review["customer_id"]
+            del review["product_id"]
 
     return users if many else users[0]
 
