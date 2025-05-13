@@ -1,3 +1,5 @@
+from flask import jsonify
+
 from db import cursor
 from .base_controller import BaseController
 
@@ -14,6 +16,7 @@ from models.orders import base_order_object
 from models.users import base_user_object
 
 from util.records import create_record_mapping
+from util.validate_uuid import validate_uuid4
 
 
 def create_user_object(user_data, many=False):
@@ -156,4 +159,18 @@ class UsersController(BaseController):
     post_data_fields = ["first_name", "last_name", "email", "password", "active"]
     default_values = ["", "", "", "", True, None, None]
     return_fields = ["user_id", "first_name", "last_name", "email", "active", "created_at", "updated_at"]
-    create_record_object = lambda _, user, many=False: create_user_object(user, many)
+    create_record_object = lambda _, user_data, many=False: [base_user_object(user) for user in user_data] if many else base_user_object(user_data)
+
+    def get_nested_records(self, record_id):
+        if not validate_uuid4(record_id):
+            return jsonify({"message": "invalid record id"}), 400
+
+        get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.table_name}"
+        WHERE {self.primary_key} = %s"""
+        cursor.execute(get_by_id_query, (record_id,))
+        record = cursor.fetchone()
+
+        if not record:
+            return jsonify({"message": "record not found"}), 404
+
+        return jsonify({"message": "record found", "results": create_user_object(record)}), 200
