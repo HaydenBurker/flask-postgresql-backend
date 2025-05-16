@@ -1,7 +1,6 @@
 import uuid
 import types
 from flask import request, jsonify
-from datetime import datetime, timezone
 
 from db import connection, cursor
 from util.validate_uuid import validate_uuid4

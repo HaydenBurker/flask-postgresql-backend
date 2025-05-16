@@ -1,4 +1,3 @@
-from db import cursor
 from .base_controller import BaseController
 from models.payments import base_payment_object
 
