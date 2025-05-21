@@ -4,3 +4,6 @@ csv/import/*
 !csv/import/.gitkeep
 csv/export/*
 !csv/export/.gitkeep
+
+.DS_Store
+__pycache__
