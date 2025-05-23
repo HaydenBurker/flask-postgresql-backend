@@ -3,6 +3,7 @@ import types
 from flask import request, jsonify
 
 from db import connection, cursor
+from models.base_model import Model
 from util.validate_uuid import validate_uuid4
 from util.datetime import datetime_now
 
@@ -12,6 +13,7 @@ class BaseController:
     default_values = []
     return_fields = []
     create_record_object = None
+    model = None
 
     def __init__(self):
         self.primary_key = self.return_fields[0]
@@ -28,6 +30,16 @@ class BaseController:
             insert_fields.append("updated_at")
             post_data["updated_at"] = current_datetime
 
+        if self.model:
+            new_record = self.model()
+            new_record.load(post_data)
+            new_record.generate_key()
+
+            insert_query = f"""INSERT INTO "{new_record.tablename}" VALUES ({",".join(["%s" for _ in new_record.get_fields()])}) RETURNING *"""
+            cursor.execute(insert_query, (*new_record.dump_values(),))
+            new_record.load(cursor.fetchone())
+            connection.commit()
+            return jsonify({"message": "test", "results": new_record.dump()}), 201
         insert_query = f"""INSERT INTO "{self.table_name}"
         VALUES (%s,{",".join(["%s" for _ in insert_fields])}) RETURNING {",".join(self.return_fields)}"""
         try:

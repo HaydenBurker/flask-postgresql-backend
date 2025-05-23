@@ -13,7 +13,7 @@ from models.payments import base_payment_object
 from models.products import base_product_object
 from models.reviews import base_review_object
 from models.orders import base_order_object
-from models.users import base_user_object
+from models.users import User, base_user_object
 
 from util.records import create_record_mapping
 from util.validate_uuid import validate_uuid4
@@ -160,6 +160,7 @@ class UsersController(BaseController):
     default_values = ["", "", "", "", True, None, None]
     return_fields = ["user_id", "first_name", "last_name", "email", "active", "created_at", "updated_at"]
     create_record_object = lambda _, user_data, many=False: [base_user_object(user) for user in user_data] if many else base_user_object(user_data)
+    model = User
 
     def get_nested_records(self, record_id):
         if not validate_uuid4(record_id):
