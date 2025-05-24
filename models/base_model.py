@@ -26,8 +26,5 @@ class Model:
     def generate_key(self):
         setattr(self, self.primary_key, str(uuid.uuid4()))
 
-    def get_fields(self):
-        return self.__dict__.keys()
-
-    def dump_values(self):
-        return [serialize(v) for v in self.__dict__.values()]
+    def dump_update(self):
+        return {k: v for k, v in self.__dict__.items()}

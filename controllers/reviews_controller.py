@@ -1,7 +1,7 @@
 from db import cursor
 
 from .base_controller import BaseController
-from models.reviews import base_review_object
+from models.reviews import Review, base_review_object
 from models.users import base_user_object
 from models.products import base_product_object
 from util.records import create_record_mapping
@@ -42,3 +42,4 @@ class ReviewsController(BaseController):
     default_values = [None, None, 0, "", None]
     return_fields = ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"]
     create_record_object = lambda _, review, many=False: create_review_object(review, many)
+    model = Review

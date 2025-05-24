@@ -39,8 +39,3 @@ connection.commit()
 
 def base_user_object(user):
     return base_record_object(user, ["user_id", "first_name", "last_name", "email", "active", "created_at", "updated_at"])
-
-user = User()
-
-user.load([1, 2, 3, 4, 5, 6, 7, 8])
-print(user.dump())

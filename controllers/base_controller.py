@@ -20,37 +20,28 @@ class BaseController:
 
     def add_record(self):
         post_data = request.json
-        insert_fields = self.post_data_fields.copy()
         current_datetime = datetime_now()
 
         if "created_at" in self.return_fields:
-            insert_fields.append("created_at")
             post_data["created_at"] = current_datetime
         if "updated_at" in self.return_fields:
-            insert_fields.append("updated_at")
             post_data["updated_at"] = current_datetime
 
-        if self.model:
-            new_record = self.model()
-            new_record.load(post_data)
-            new_record.generate_key()
+        new_record = self.model()
+        new_record.load(post_data)
+        new_record.generate_key()
 
-            insert_query = f"""INSERT INTO "{new_record.tablename}" VALUES ({",".join(["%s" for _ in new_record.get_fields()])}) RETURNING *"""
-            cursor.execute(insert_query, (*new_record.dump_values(),))
-            new_record.load(cursor.fetchone())
-            connection.commit()
-            return jsonify({"message": "test", "results": new_record.dump()}), 201
-        insert_query = f"""INSERT INTO "{self.table_name}"
-        VALUES (%s,{",".join(["%s" for _ in insert_fields])}) RETURNING {",".join(self.return_fields)}"""
+        [fields, values] = zip(*new_record.dump_update().items())
+        insert_query = f"""INSERT INTO "{new_record.tablename}" VALUES ({",".join(["%s" for _ in fields])}) RETURNING *"""
         try:
-            cursor.execute(insert_query, (str(uuid.uuid4()), *[post_data.get(field, value() if isinstance(value, types.FunctionType) else value) for field, value in zip(insert_fields, self.default_values)]))
-            record = cursor.fetchone()
+            cursor.execute(insert_query, (*values,))
+            new_record.load(cursor.fetchone())
             connection.commit()
         except:
             connection.rollback()
             return jsonify({"message": "unable to add record"}), 400
 
-        return jsonify({"message": "added record", "results": self.create_record_object(record)}), 201
+        return jsonify({"message": "added record", "results": self.create_record_object(new_record.dump().values())}), 201
 
     def get_all_records(self):
         get_all_query = f'SELECT {",".join(self.return_fields)} FROM "{self.table_name}"'

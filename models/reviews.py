@@ -1,6 +1,19 @@
 from db import connection, cursor
 
 from util.records import base_record_object
+from .base_model import Model
+
+class Review(Model):
+    primary_key = "review_id"
+    tablename = "Reviews"
+
+    def __init__(self, review_id=None, customer_id=None, product_id=None, rating=0, comment="", created_at=None):
+        self.review_id = review_id
+        self.customer_id = customer_id
+        self.product_id = product_id
+        self.rating = rating
+        self.comment = comment
+        self.created_at = created_at
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Reviews" (
     review_id UUID NOT NULL,

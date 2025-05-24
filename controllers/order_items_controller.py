@@ -1,7 +1,7 @@
 from db import cursor
 
 from .base_controller import BaseController
-from models.order_items import base_order_item_object
+from models.order_items import OrderItem, base_order_item_object
 from models.orders import base_order_object
 from models.products import base_product_object
 from util.records import create_record_mapping
@@ -38,3 +38,4 @@ class OrderItemsController(BaseController):
     default_values = [None, None, 0, 0]
     return_fields = ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "total_price"]
     create_record_object = lambda _, order_item, many=False: create_order_item_object(order_item, many)
+    model = OrderItem

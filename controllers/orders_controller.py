@@ -2,7 +2,7 @@ from flask import request, jsonify
 
 from db import connection, cursor
 from .base_controller import BaseController
-from models.orders import base_order_object
+from models.orders import Order, base_order_object
 from models.users import base_user_object
 from models.discounts import base_discount_object
 from util.validate_uuid import validate_uuid4
@@ -46,6 +46,7 @@ class OrdersController(BaseController):
     default_values = [None, None, None, "", 0, True, None, None]
     return_fields = ["order_id", "customer_id", "order_date", "shipping_date", "status", "total_amount", "active", "created_at", "updated_at"]
     create_record_object = lambda _, order, many=False: create_order_object(order, many)
+    model = Order
 
     def order_add_discount(self):
         post_data = request.json

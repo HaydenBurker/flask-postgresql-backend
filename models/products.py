@@ -1,6 +1,21 @@
 from db import connection, cursor
 
 from util.records import base_record_object
+from .base_model import Model
+
+class Product(Model):
+    primary_key = "product_id"
+    tablename = "Products"
+
+    def __init__(self, product_id=None, name="", description="", price=0, stock_quantity=0, created_by_id=None, created_at=None, updated_at=None):
+        self.product_id = product_id
+        self.name = name
+        self.description = description
+        self.price = price
+        self.stock_quantity = stock_quantity
+        self.created_by_id = created_by_id
+        self.created_at = created_at
+        self.updated_at = updated_at
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
     product_id UUID NOT NULL,

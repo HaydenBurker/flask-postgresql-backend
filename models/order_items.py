@@ -1,6 +1,24 @@
 from db import connection, cursor
 
+from .base_model import Model
 from util.records import base_record_object
+
+class OrderItem(Model):
+    primary_key = "order_item_id"
+    tablename = "OrderItems"
+
+    def __init__(self, order_item_id=None, order_id=None, product_id=None, quantity=0, unit_price=0, total_price=0):
+        self.order_item_id = order_item_id
+        self.order_id = order_id
+        self.product_id = product_id
+        self.quantity = quantity
+        self.unit_price = unit_price
+        self.total_price = total_price
+
+    def dump_update(self):
+        obj = super().dump_update()
+        del obj["total_price"]
+        return obj
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "OrderItems" (
     order_item_id UUID NOT NULL,

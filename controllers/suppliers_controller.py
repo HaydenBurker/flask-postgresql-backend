@@ -3,7 +3,7 @@ from flask import request, jsonify
 from db import connection, cursor
 
 from .base_controller import BaseController
-from models.suppliers import base_supplier_object
+from models.suppliers import Supplier, base_supplier_object
 from models.product_suppliers import base_product_supplier_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
@@ -50,6 +50,7 @@ class SuppliersController(BaseController):
     default_values = ["", "", "", "", "", True]
     return_fields = ["supplier_id", "company_name", "contact_name", "email", "phone_number", "address", "active"]
     create_record_object = lambda _, supplier, many=False: create_supplier_object(supplier, many)
+    model = Supplier
 
     def add_product_supplier(self):
         post_data = request.json

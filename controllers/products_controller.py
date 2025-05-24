@@ -2,7 +2,7 @@ from flask import request, jsonify
 
 from db import connection, cursor
 from .base_controller import BaseController
-from models.products import base_product_object
+from models.products import Product, base_product_object
 from models.categories import base_category_object
 from models.users import base_user_object
 from util.validate_uuid import validate_uuid4
@@ -55,6 +55,7 @@ class ProductsController(BaseController):
     default_values = ["", "", 0, 0, None, None, None]
     return_fields = ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"]
     create_record_object = lambda _, product, many=False: create_product_object(product, many)
+    model = Product
 
     def product_add_category(self):
         post_data = request.json
