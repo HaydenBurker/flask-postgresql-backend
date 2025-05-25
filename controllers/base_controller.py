@@ -68,33 +68,35 @@ class BaseController:
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
         post_data = request.json
-        update_fields = self.post_data_fields.copy()
 
         if "updated_at" in self.return_fields:
-            update_fields.append("updated_at")
             post_data["updated_at"] = datetime_now()
 
-        get_by_id_query = f"""SELECT {",".join(update_fields)} FROM "{self.table_name}"
+        get_by_id_query = f"""SELECT * FROM "{self.model.tablename}"
         WHERE {self.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
             return jsonify({"message": "record not found"}), 404
 
-        update_query_fields = ",".join(f"{field} = %s" for field in update_fields)
+        update_record = self.model()
+        update_record.load(record)
+        key = getattr(update_record, update_record.primary_key)
+        update_record.load(post_data)
+        setattr(update_record, update_record.primary_key, key)
 
-        update_query = f"""UPDATE "{self.table_name}"
-        SET {update_query_fields}
-        WHERE {self.primary_key} = %s RETURNING {",".join(self.return_fields)}"""
+        [fields, values] = zip(*update_record.dump_update().items())
+        update_query_fields = ",".join(f"{field} = %s" for field in fields)
+        update_query = f"""UPDATE "{self.model.tablename}" SET {update_query_fields} WHERE {update_record.primary_key} = %s RETURNING *"""
 
         try:
-            cursor.execute(update_query, (*[post_data.get(field, value) for (field, value) in zip(update_fields, record)], record_id))
-            record = cursor.fetchone()
+            cursor.execute(update_query, (*values, getattr(update_record, update_record.primary_key)))
+            update_record.load(cursor.fetchone())
             connection.commit()
         except:
             connection.rollback()
             return jsonify({"message": "unable to update record"}), 400
-        return jsonify({"message": "record updated", "results": self.create_record_object(record)}), 200
+        return jsonify({"message": "record updated", "results": self.create_record_object(update_record.dump().values())}), 200
 
     def record_activity(self, record_id, active_field="active"):
         if not validate_uuid4(record_id):
