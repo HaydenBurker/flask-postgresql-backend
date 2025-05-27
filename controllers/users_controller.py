@@ -36,7 +36,7 @@ def create_user_object(user_data, many=False):
         review_product_ids = tuple(set(review[2] for review in reviews))
         products_query = """SELECT * FROM "Products"
         WHERE created_by_id IN %s OR product_id IN %s"""
-        cursor.execute(products_query, (user_ids, review_product_ids))
+        cursor.execute(products_query, (user_ids, review_product_ids or user_ids))
         products = cursor.fetchall()
     user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
     product_product_mapping = create_record_mapping(products, base_product_object, key="product_id")
@@ -167,7 +167,7 @@ class UsersController(BaseController):
             return jsonify({"message": "invalid record id"}), 400
 
         get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.table_name}"
-        WHERE {self.primary_key} = %s"""
+        WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
 

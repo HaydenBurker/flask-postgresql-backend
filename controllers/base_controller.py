@@ -1,31 +1,20 @@
-import uuid
-import types
 from flask import request, jsonify
 
 from db import connection, cursor
-from models.base_model import Model
 from util.validate_uuid import validate_uuid4
 from util.datetime import datetime_now
 
 class BaseController:
-    table_name = None
-    post_data_fields = []
-    default_values = []
     return_fields = []
     create_record_object = None
     model = None
-
-    def __init__(self):
-        self.primary_key = self.return_fields[0]
 
     def add_record(self):
         post_data = request.json
         current_datetime = datetime_now()
 
-        if "created_at" in self.return_fields:
-            post_data["created_at"] = current_datetime
-        if "updated_at" in self.return_fields:
-            post_data["updated_at"] = current_datetime
+        post_data["created_at"] = current_datetime
+        post_data["updated_at"] = current_datetime
 
         new_record = self.model()
         new_record.load(post_data)
@@ -44,7 +33,7 @@ class BaseController:
         return jsonify({"message": "added record", "results": self.create_record_object(new_record.dump().values())}), 201
 
     def get_all_records(self):
-        get_all_query = f'SELECT {",".join(self.return_fields)} FROM "{self.table_name}"'
+        get_all_query = f'SELECT {",".join(self.return_fields)} FROM "{self.model.tablename}"'
         cursor.execute(get_all_query)
 
         records = cursor.fetchall()
@@ -55,8 +44,8 @@ class BaseController:
     def get_record_by_id(self, record_id):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
-        get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.table_name}"
-        WHERE {self.primary_key} = %s"""
+        get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.model.tablename}"
+        WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
@@ -69,11 +58,10 @@ class BaseController:
             return jsonify({"message": "invalid record id"}), 400
         post_data = request.json
 
-        if "updated_at" in self.return_fields:
-            post_data["updated_at"] = datetime_now()
+        post_data["updated_at"] = datetime_now()
 
         get_by_id_query = f"""SELECT * FROM "{self.model.tablename}"
-        WHERE {self.primary_key} = %s"""
+        WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
@@ -101,8 +89,8 @@ class BaseController:
     def record_activity(self, record_id, active_field="active"):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
-        get_by_id_query = f"""SELECT {active_field} FROM "{self.table_name}"
-        WHERE {self.primary_key} = %s"""
+        get_by_id_query = f"""SELECT {active_field} FROM "{self.model.tablename}"
+        WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
@@ -110,9 +98,9 @@ class BaseController:
 
         [active] = record
 
-        activity_query = f"""UPDATE "{self.table_name}"
+        activity_query = f"""UPDATE "{self.model.tablename}"
         SET {active_field} = %s
-        WHERE {self.primary_key} = %s RETURNING {",".join(self.return_fields)}"""
+        WHERE {self.model.primary_key} = %s RETURNING {",".join(self.return_fields)}"""
         active = not active
         cursor.execute(activity_query, (active, record_id))
         record = cursor.fetchone()
@@ -123,8 +111,8 @@ class BaseController:
     def delete_record(self, record_id):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
-        get_by_id_query = f"""SELECT {self.primary_key} FROM "{self.table_name}"
-        WHERE {self.primary_key} = %s"""
+        get_by_id_query = f"""SELECT {self.model.primary_key} FROM "{self.model.tablename}"
+        WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
@@ -132,8 +120,8 @@ class BaseController:
 
         [record_id] = record
 
-        delete_query = f"""DELETE FROM "{self.table_name}"
-        WHERE {self.primary_key} = %s"""
+        delete_query = f"""DELETE FROM "{self.model.tablename}"
+        WHERE {self.model.primary_key} = %s"""
         try:
             cursor.execute(delete_query, (record_id,))
             connection.commit()
