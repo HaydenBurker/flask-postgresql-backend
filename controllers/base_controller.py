@@ -5,7 +5,6 @@ from util.validate_uuid import validate_uuid4
 from util.datetime import datetime_now
 
 class BaseController:
-    return_fields = []
     create_record_object = None
     model = None
 
@@ -33,25 +32,27 @@ class BaseController:
         return jsonify({"message": "added record", "results": self.create_record_object(new_record.dump().values())}), 201
 
     def get_all_records(self):
-        get_all_query = f'SELECT {",".join(self.return_fields)} FROM "{self.model.tablename}"'
+        get_all_query = f'SELECT * FROM "{self.model.tablename}"'
         cursor.execute(get_all_query)
 
-        records = cursor.fetchall()
-        records = self.create_record_object(records, many=True)
+        records = [self.model().load(record) for record in cursor.fetchall()]
+        records = self.create_record_object([record.dump().values() for record in records], many=True)
 
         return jsonify({"message": "records found", "results": records}), 200
 
     def get_record_by_id(self, record_id):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
-        get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.model.tablename}"
+        get_by_id_query = f"""SELECT * FROM "{self.model.tablename}"
         WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
         if not record:
             return jsonify({"message": "record not found"}), 404
+        
+        record = self.model().load(record)
 
-        return jsonify({"message": "record found", "results": self.create_record_object(record)}), 200
+        return jsonify({"message": "record found", "results": self.create_record_object(record.dump().values())}), 200
 
     def update_record(self, record_id):
         if not validate_uuid4(record_id):
@@ -100,13 +101,14 @@ class BaseController:
 
         activity_query = f"""UPDATE "{self.model.tablename}"
         SET {active_field} = %s
-        WHERE {self.model.primary_key} = %s RETURNING {",".join(self.return_fields)}"""
+        WHERE {self.model.primary_key} = %s RETURNING * """
         active = not active
         cursor.execute(activity_query, (active, record_id))
         record = cursor.fetchone()
+        record = self.model().load(record)
         connection.commit()
 
-        return jsonify({"message": f"record {'activated' if active else 'deactivated'}", "results": self.create_record_object(record)}), 200
+        return jsonify({"message": f"record {'activated' if active else 'deactivated'}", "results": self.create_record_object(record.dump().values())}), 200
 
     def delete_record(self, record_id):
         if not validate_uuid4(record_id):

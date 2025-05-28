@@ -50,10 +50,6 @@ def create_product_object(product_data, many=False):
     return products if many else products[0]
 
 class ProductsController(BaseController):
-    table_name = "Products"
-    post_data_fields = ["name", "description", "price", "stock_quantity", "created_by_id"]
-    default_values = ["", "", 0, 0, None, None, None]
-    return_fields = ["product_id", "name", "description", "price", "stock_quantity", "created_by_id", "created_at", "updated_at"]
     create_record_object = lambda _, product, many=False: create_product_object(product, many)
     model = Product
 

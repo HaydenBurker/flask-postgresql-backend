@@ -20,6 +20,8 @@ class Model:
             for i in range(len(self.__dict__)):
                 setattr(self, keys[i], data[i])
 
+        return self
+
     def dump(self):
         return {k: serialize(v) for k, v in self.__dict__.items()}
 

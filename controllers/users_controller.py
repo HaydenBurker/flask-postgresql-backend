@@ -155,10 +155,6 @@ def create_user_object(user_data, many=False):
     return users if many else users[0]
 
 class UsersController(BaseController):
-    table_name = "Users"
-    post_data_fields = ["first_name", "last_name", "email", "password", "active"]
-    default_values = ["", "", "", "", True, None, None]
-    return_fields = ["user_id", "first_name", "last_name", "email", "active", "created_at", "updated_at"]
     create_record_object = lambda _, user_data, many=False: [base_user_object(user) for user in user_data] if many else base_user_object(user_data)
     model = User
 
@@ -166,12 +162,14 @@ class UsersController(BaseController):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
 
-        get_by_id_query = f"""SELECT {",".join(self.return_fields)} FROM "{self.table_name}"
+        get_by_id_query = f"""SELECT * FROM "{self.model.tablename}"
         WHERE {self.model.primary_key} = %s"""
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
 
+        record = self.model().load(record)
+
         if not record:
             return jsonify({"message": "record not found"}), 404
 
-        return jsonify({"message": "record found", "results": create_user_object(record)}), 200
+        return jsonify({"message": "record found", "results": create_user_object(record.dump().values())}), 200

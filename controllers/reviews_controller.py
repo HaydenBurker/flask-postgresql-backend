@@ -37,9 +37,5 @@ def create_review_object(review_data, many=False):
     return reviews if many else reviews[0]
 
 class ReviewsController(BaseController):
-    table_name = "Reviews"
-    post_data_fields = ["customer_id", "product_id", "rating", "comment"]
-    default_values = [None, None, 0, "", None]
-    return_fields = ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"]
     create_record_object = lambda _, review, many=False: create_review_object(review, many)
     model = Review

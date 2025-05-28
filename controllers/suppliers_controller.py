@@ -45,10 +45,6 @@ def create_supplier_object(supplier_data, many=False):
     return suppliers if many else suppliers[0]
 
 class SuppliersController(BaseController):
-    table_name = "Suppliers"
-    post_data_fields = ["company_name", "contact_name", "email", "phone_number", "address", "active"]
-    default_values = ["", "", "", "", "", True]
-    return_fields = ["supplier_id", "company_name", "contact_name", "email", "phone_number", "address", "active"]
     create_record_object = lambda _, supplier, many=False: create_supplier_object(supplier, many)
     model = Supplier
 

@@ -33,9 +33,5 @@ def create_order_item_object(order_item_data, many=False):
     return order_items if many else order_items[0]
 
 class OrderItemsController(BaseController):
-    table_name = "OrderItems"
-    post_data_fields = ["order_id", "product_id", "quantity", "unit_price"]
-    default_values = [None, None, 0, 0]
-    return_fields = ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "total_price"]
     create_record_object = lambda _, order_item, many=False: create_order_item_object(order_item, many)
     model = OrderItem
