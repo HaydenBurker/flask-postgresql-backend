@@ -2,7 +2,7 @@ from flask import request, jsonify
 
 from db import connection, cursor
 from .base_controller import BaseController
-from models.orders import Order, base_order_object
+from models.orders import Order
 from models.users import base_user_object
 from models.discounts import base_discount_object
 from util.validate_uuid import validate_uuid4
@@ -10,7 +10,7 @@ from util.records import create_record_mapping
 
 
 def create_order_object(order_data, many=False):
-    orders = [base_order_object(order) for order in order_data] if many else [base_order_object(order_data)]
+    orders = [order.dump() for order in order_data] if many else [order_data.dump()]
     order_ids = tuple(set(order["order_id"] for order in orders))
     customer_ids = tuple(set(order["customer_id"] for order in orders))
 

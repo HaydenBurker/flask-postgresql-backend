@@ -1,13 +1,13 @@
 from db import cursor
 
 from .base_controller import BaseController
-from models.order_items import OrderItem, base_order_item_object
+from models.order_items import OrderItem
 from models.orders import base_order_object
 from models.products import base_product_object
 from util.records import create_record_mapping
 
 def create_order_item_object(order_item_data, many=False):
-    order_items = [base_order_item_object(o) for o in order_item_data] if many else [base_order_item_object(order_item_data)]
+    order_items = [o.dump() for o in order_item_data] if many else [order_item_data.dump()]
     order_ids = tuple(set(order["order_id"] for order in order_items))
     product_ids = tuple(set(order["product_id"] for order in order_items))
 

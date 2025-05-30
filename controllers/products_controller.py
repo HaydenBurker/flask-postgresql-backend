@@ -2,7 +2,7 @@ from flask import request, jsonify
 
 from db import connection, cursor
 from .base_controller import BaseController
-from models.products import Product, base_product_object
+from models.products import Product
 from models.categories import base_category_object
 from models.users import base_user_object
 from util.validate_uuid import validate_uuid4
@@ -10,7 +10,7 @@ from util.records import create_record_mapping
 
 
 def create_product_object(product_data, many=False):
-    products = [base_product_object(product) for product in product_data] if many else [base_product_object(product_data)]
+    products = [product.dump() for product in product_data] if many else [product_data.dump()]
     product_ids = tuple(set(product["product_id"] for product in products))
     created_by_ids = tuple(set(product["created_by_id"] for product in products))
 

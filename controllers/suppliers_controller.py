@@ -3,14 +3,14 @@ from flask import request, jsonify
 from db import connection, cursor
 
 from .base_controller import BaseController
-from models.suppliers import Supplier, base_supplier_object
+from models.suppliers import Supplier
 from models.product_suppliers import base_product_supplier_object
 from models.products import base_product_object
 from util.validate_uuid import validate_uuid4
 from util.records import create_record_mapping
 
 def create_supplier_object(supplier_data, many=False):
-    suppliers = [base_supplier_object(supplier) for supplier in supplier_data] if many else [base_supplier_object(supplier_data)]
+    suppliers = [supplier.dump() for supplier in supplier_data] if many else [supplier_data.dump()]
     supplier_ids = tuple(set(supplier["supplier_id"] for supplier in suppliers))
 
     product_suppliers = []

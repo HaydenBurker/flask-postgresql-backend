@@ -1,13 +1,13 @@
 from db import cursor
 
 from .base_controller import BaseController
-from models.reviews import Review, base_review_object
+from models.reviews import Review
 from models.users import base_user_object
 from models.products import base_product_object
 from util.records import create_record_mapping
 
 def create_review_object(review_data, many=False):
-    reviews = [base_review_object(review) for review in review_data] if many else [base_review_object(review_data)]
+    reviews = [review.dump() for review in review_data] if many else [review_data.dump()]
     customer_ids = tuple(set(review["customer_id"] for review in reviews))
     product_ids = tuple(set(review["product_id"] for review in reviews))
 

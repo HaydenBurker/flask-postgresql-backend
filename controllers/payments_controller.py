@@ -1,7 +1,7 @@
 from .base_controller import BaseController
-from models.payments import Payment, base_payment_object
+from models.payments import Payment
 
 
 class PaymentsController(BaseController):
-    create_record_object = lambda _, payment_data, many=False: [base_payment_object(payment) for payment in payment_data] if many else base_payment_object(payment_data)
+    create_record_object = lambda _, payment_data, many=False: [payment.dump() for payment in payment_data] if many else payment_data.dump()
     model = Payment

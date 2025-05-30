@@ -13,14 +13,14 @@ from models.payments import base_payment_object
 from models.products import base_product_object
 from models.reviews import base_review_object
 from models.orders import base_order_object
-from models.users import User, base_user_object
+from models.users import User
 
 from util.records import create_record_mapping
 from util.validate_uuid import validate_uuid4
 
 
 def create_user_object(user_data, many=False):
-    users = [base_user_object(user) for user in user_data] if many else [base_user_object(user_data)]
+    users = [user.dump() for user in user_data] if many else [user_data.dump()]
     user_ids = tuple(set(user["user_id"] for user in users))
 
     reviews = []
@@ -155,7 +155,7 @@ def create_user_object(user_data, many=False):
     return users if many else users[0]
 
 class UsersController(BaseController):
-    create_record_object = lambda _, user_data, many=False: [base_user_object(user) for user in user_data] if many else base_user_object(user_data)
+    create_record_object = lambda _, user_data, many=False: [user.dump() for user in user_data] if many else user_data.dump()
     model = User
 
     def get_nested_records(self, record_id):
@@ -172,4 +172,4 @@ class UsersController(BaseController):
         if not record:
             return jsonify({"message": "record not found"}), 404
 
-        return jsonify({"message": "record found", "results": create_user_object(record.dump().values())}), 200
+        return jsonify({"message": "record found", "results": create_user_object(record)}), 200
