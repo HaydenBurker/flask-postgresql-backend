@@ -15,8 +15,7 @@ class BaseController:
         post_data["created_at"] = current_datetime
         post_data["updated_at"] = current_datetime
 
-        new_record = self.model()
-        new_record.load(post_data)
+        new_record = self.model().load(post_data)
         new_record.generate_key()
 
         [fields, values] = zip(*new_record.dump_update().items())
@@ -68,8 +67,7 @@ class BaseController:
         if not record:
             return jsonify({"message": "record not found"}), 404
 
-        update_record = self.model()
-        update_record.load(record)
+        update_record = self.model().load(record)
         key = getattr(update_record, update_record.primary_key)
         update_record.load(post_data)
         setattr(update_record, update_record.primary_key, key)
