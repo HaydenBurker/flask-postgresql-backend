@@ -17,6 +17,7 @@ class Order(Model):
         self.active = active
         self.created_at = created_at
         self.updated_at = updated_at
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
     order_id UUID NOT NULL,

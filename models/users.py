@@ -16,6 +16,7 @@ class User(Model):
         self.active = active
         self.created_at = created_at
         self.updated_at = updated_at
+        self.set_fields()
 
     def dump(self):
         obj = super().dump()

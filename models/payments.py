@@ -14,6 +14,7 @@ class Payment(Model):
         self.payment_date = payment_date
         self.payment_status = payment_status
         self.payment_amount = payment_amount
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
     payment_id UUID NOT NULL,

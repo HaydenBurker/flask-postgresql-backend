@@ -15,6 +15,7 @@ class Supplier(Model):
         self.phone_number = phone_number
         self.address = address
         self.active = active
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Suppliers" (
     supplier_id UUID NOT NULL,

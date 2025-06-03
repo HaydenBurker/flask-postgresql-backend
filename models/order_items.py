@@ -14,6 +14,7 @@ class OrderItem(Model):
         self.quantity = quantity
         self.unit_price = unit_price
         self.total_price = total_price
+        self.set_fields()
 
     def dump_update(self):
         obj = super().dump_update()

@@ -16,6 +16,7 @@ class Product(Model):
         self.created_by_id = created_by_id
         self.created_at = created_at
         self.updated_at = updated_at
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Products" (
     product_id UUID NOT NULL,

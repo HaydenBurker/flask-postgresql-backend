@@ -15,6 +15,7 @@ class Discount(Model):
         self.start_date  = start_date
         self.end_date  = end_date
         self.min_order_amount  = min_order_amount
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Discounts" (
     discount_id UUID NOT NULL,

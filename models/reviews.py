@@ -14,6 +14,7 @@ class Review(Model):
         self.rating = rating
         self.comment = comment
         self.created_at = created_at
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Reviews" (
     review_id UUID NOT NULL,

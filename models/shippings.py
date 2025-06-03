@@ -16,6 +16,7 @@ class Shipping(Model):
         self.tracking_number = tracking_number
         self.shipping_status = shipping_status
         self.shipped_date = shipped_date
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Shippings" (
     shipping_id UUID NOT NULL,

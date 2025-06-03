@@ -10,7 +10,8 @@ class Category(Model):
     def __init__(self, category_id=None, name="", description=""):
         self.category_id = category_id
         self.name = name
-        self. description = description
+        self.description = description
+        self.set_fields()
 
 cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
     category_id UUID NOT NULL,
