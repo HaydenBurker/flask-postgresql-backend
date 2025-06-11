@@ -167,10 +167,10 @@ class UsersController(BaseController):
         cursor.execute(get_by_id_query, (record_id,))
         record = cursor.fetchone()
 
-        record = self.model().load(record)
-
         if not record:
             return jsonify({"message": "record not found"}), 404
+
+        record = self.model().load(record)
 
         return jsonify({"message": "record found", "results": create_user_object(record)}), 200
     
