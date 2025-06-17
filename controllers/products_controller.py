@@ -24,7 +24,7 @@ def create_product_object(product_data, many=False):
 
     categories = []
     if product_ids:
-        categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
+        categories_query = """SELECT "Categories".*, "ProductsCategoriesXref".product_id FROM "Categories"
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
         cursor.execute(categories_query, (product_ids,))

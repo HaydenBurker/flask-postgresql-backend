@@ -44,7 +44,7 @@ def create_user_object(user_data, many=False):
 
     categories = []
     if product_ids:
-        categories_query = """SELECT "Categories".category_id, "Categories".name, "Categories".description, "ProductsCategoriesXref".product_id FROM "Categories"
+        categories_query = """SELECT "Categories".*, "ProductsCategoriesXref".product_id FROM "Categories"
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
         cursor.execute(categories_query, (product_ids,))
@@ -53,7 +53,7 @@ def create_user_object(user_data, many=False):
 
     orders = []
     if user_ids:
-        orders_query = """SELECT order_id, customer_id, order_date, shipping_date, status, total_amount, active, created_at, updated_at FROM "Orders"
+        orders_query = """SELECT * FROM "Orders"
         WHERE customer_id IN %s"""
         cursor.execute(orders_query, (user_ids,))
         orders = cursor.fetchall()
@@ -62,7 +62,7 @@ def create_user_object(user_data, many=False):
 
     shippings = []
     if order_ids:
-        shippings_query = """SELECT shipping_id, order_id, shipping_address, shipping_label, shipping_cost, tracking_number, shipping_status, shipped_date FROM "Shippings"
+        shippings_query = """SELECT * FROM "Shippings"
         WHERE order_id IN %s"""
         cursor.execute(shippings_query, (order_ids,))
         shippings = cursor.fetchall()
@@ -70,7 +70,7 @@ def create_user_object(user_data, many=False):
 
     payments = []
     if order_ids:
-        payments_query = """SELECT payment_id, order_id, payment_method, payment_date, payment_status, payment_amount FROM "Payments"
+        payments_query = """SELECT * FROM "Payments"
         WHERE order_id IN %s"""
         cursor.execute(payments_query, (order_ids,))
         payments = cursor.fetchall()
@@ -78,7 +78,7 @@ def create_user_object(user_data, many=False):
 
     discounts = []
     if order_ids:
-        discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
+        discounts_query = """SELECT "Discounts".*, "OrdersDiscountsXref".order_id FROM "Discounts"
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
         WHERE order_id IN %s"""
         cursor.execute(discounts_query, (order_ids,))

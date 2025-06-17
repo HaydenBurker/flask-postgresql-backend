@@ -25,7 +25,7 @@ def create_order_object(order_data, many=False):
 
     discounts = []
     if order_ids:
-        discounts_query = """SELECT "Discounts".discount_id, "Discounts".discount_code, "Discounts".discount_type, "Discounts".discount_value, "Discounts".start_date, "Discounts".end_date, "Discounts".min_order_amount, "OrdersDiscountsXref".order_id FROM "Discounts"
+        discounts_query = """SELECT "Discounts".*, "OrdersDiscountsXref".order_id FROM "Discounts"
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
         WHERE "OrdersDiscountsXref".order_id IN %s"""
         cursor.execute(discounts_query, (order_ids,))
