@@ -29,6 +29,10 @@ class Model:
 
         return self
 
+    @classmethod
+    def load_many(cls, data):
+        return [cls().load(record) for record in data]
+
     def dump(self):
         return {k: serialize(v) for k, v in self.__dict__.items() if k in self.fields}
 
