@@ -12,7 +12,7 @@ class Model:
         if not cls.fields:
             cls.fields = list(self.__dict__.keys())
 
-    def load(self, data):
+    def load(self, data, other_fields=[]):
         if type(data) == dict:
             fields = data.keys()
             self_fields = set(self.fields)
@@ -22,7 +22,7 @@ class Model:
                     setattr(self, field, data[field])
 
         elif type(data) in [tuple, list]:
-            keys = self.fields
+            keys = self.fields + other_fields
 
             for i in range(len(keys)):
                 setattr(self, keys[i], data[i])
@@ -30,8 +30,8 @@ class Model:
         return self
 
     @classmethod
-    def load_many(cls, data):
-        return [cls().load(record) for record in data]
+    def load_many(cls, data, other_fields=[]):
+        return [cls().load(record, other_fields=other_fields) for record in data]
 
     def dump(self):
         return {k: serialize(v) for k, v in self.__dict__.items() if k in self.fields}

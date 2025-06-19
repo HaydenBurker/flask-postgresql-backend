@@ -3,8 +3,8 @@ from flask import request, jsonify
 from db import connection, cursor
 from .base_controller import BaseController
 from models.orders import Order
-from models.users import base_user_object
-from models.discounts import base_discount_object
+from models.users import User
+from models.discounts import Discount
 from util.validate_uuid import validate_uuid4
 from util.records import create_record_mapping
 
@@ -16,12 +16,12 @@ def create_order_object(order_data, many=False):
 
     users = []
     if customer_ids:
-        users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+        users_query = """SELECT * FROM "Users"
         WHERE user_id IN %s"""
         cursor.execute(users_query, (customer_ids,))
-        users = cursor.fetchall()
+        users = User.load_many(cursor.fetchall())
 
-    order_user_mapping = create_record_mapping(users, base_user_object, key="user_id", many=False)
+    order_user_mapping = create_record_mapping(users, many=False)
 
     discounts = []
     if order_ids:
@@ -29,9 +29,9 @@ def create_order_object(order_data, many=False):
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
         WHERE "OrdersDiscountsXref".order_id IN %s"""
         cursor.execute(discounts_query, (order_ids,))
-        discounts = cursor.fetchall()
+        discounts = Discount.load_many(cursor.fetchall(), ["order_id"])
 
-    order_discount_mapping = create_record_mapping(discounts, base_discount_object, many=True)
+    order_discount_mapping = create_record_mapping(discounts, key="order_id", many=True)
 
     for i, order in enumerate(orders):
         orders[i]["customer"] = order_user_mapping.get(order["customer_id"], [])

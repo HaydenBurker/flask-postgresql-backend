@@ -43,7 +43,7 @@ def create_record_mapping(records, key=None, many=False):
             if not record_mapping.get(record_key):
                 record_mapping[record_key] = [record.dump()]
             else:
-                record_mapping[record_key].append(record)
+                record_mapping[record_key].append(record.dump())
         else:
             record_mapping[record_key] = record.dump()
 
