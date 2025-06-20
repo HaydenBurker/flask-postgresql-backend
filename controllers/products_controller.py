@@ -3,10 +3,21 @@ from flask import request, jsonify
 from db import connection, cursor
 from .base_controller import BaseController
 from models.products import Product
-from models.categories import base_category_object
-from models.users import base_user_object
+from models.categories import Category
+from models.users import User
+from models.base_model import Model
 from util.validate_uuid import validate_uuid4
 from util.records import create_record_mapping
+
+
+class Rating(Model):
+    def __init__(self, rating=0):
+        self.rating = rating
+        self.set_fields()
+    
+    def dump(self):
+        obj = super().dump()
+        return obj['rating']
 
 
 def create_product_object(product_data, many=False):
@@ -16,11 +27,11 @@ def create_product_object(product_data, many=False):
 
     users = []
     if created_by_ids:
-        users_query = """SELECT user_id, first_name, last_name, email, active, created_at, updated_at FROM "Users"
+        users_query = """SELECT * FROM "Users"
         WHERE user_id IN %s"""
         cursor.execute(users_query, (created_by_ids,))
-        users = cursor.fetchall()
-    product_user_mapping = create_record_mapping(users, base_user_object, key="user_id")
+        users = User.load_many(cursor.fetchall())
+    product_user_mapping = create_record_mapping(users)
 
     categories = []
     if product_ids:
@@ -28,8 +39,8 @@ def create_product_object(product_data, many=False):
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
         cursor.execute(categories_query, (product_ids,))
-        categories = cursor.fetchall()
-    product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
+        categories = Category.load_many(cursor.fetchall(), ["product_id"])
+    product_category_mapping = create_record_mapping(categories, key="product_id", many=True)
 
     ratings = []
     if product_ids:
@@ -37,8 +48,8 @@ def create_product_object(product_data, many=False):
         WHERE product_id in %s
         GROUP BY product_id"""
         cursor.execute(ratings_query, (product_ids,))
-        ratings = cursor.fetchall()
-    product_rating_mapping = create_record_mapping(ratings, lambda record: record[0])
+        ratings = Rating.load_many(cursor.fetchall(), ["product_id"])
+    product_rating_mapping = create_record_mapping(ratings, key="product_id")
 
     for i, product in enumerate(products):
         product_id = product["product_id"]
