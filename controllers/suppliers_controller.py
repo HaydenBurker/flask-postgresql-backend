@@ -4,8 +4,8 @@ from db import connection, cursor
 
 from .base_controller import BaseController
 from models.suppliers import Supplier
-from models.product_suppliers import base_product_supplier_object
-from models.products import base_product_object
+from models.product_suppliers import ProductSupplier
+from models.products import Product
 from util.validate_uuid import validate_uuid4
 from util.records import create_record_mapping
 
@@ -18,8 +18,8 @@ def create_supplier_object(supplier_data, many=False):
         product_supplier_query = """SELECT * FROM "ProductSuppliers"
         WHERE supplier_id IN %s"""
         cursor.execute(product_supplier_query, (supplier_ids,))
-        product_suppliers = cursor.fetchall()
-    supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="supplier_id", many=True)
+        product_suppliers = ProductSupplier.load_many(cursor.fetchall())
+    supplier_product_supplier_mapping = create_record_mapping(product_suppliers, key="supplier_id", many=True)
 
     product_ids = set()
     for product_suppliers in supplier_product_supplier_mapping.values():
@@ -29,8 +29,8 @@ def create_supplier_object(supplier_data, many=False):
         products_query = """SELECT * FROM "Products"
         WHERE product_id IN %s"""
         cursor.execute(products_query, (tuple(product_ids),))
-        products = cursor.fetchall()
-        supplier_product_mapping = create_record_mapping(products, base_product_object, key="product_id")
+        products = Product.load_many(cursor.fetchall())
+        supplier_product_mapping = create_record_mapping(products)
 
     for i, supplier in enumerate(suppliers):
         product_suppliers = supplier_product_supplier_mapping.get(supplier["supplier_id"], [])
@@ -69,7 +69,8 @@ class SuppliersController(BaseController):
         cursor.execute(supplier_query, (supplier_id,))
         supplier = cursor.fetchone()
         if not supplier:
-            return jsonify({"message": "supplier not found"}), 404
+            return jsonify({"message": "supplier not found"}), 404        
+        supplier = Supplier().load(supplier)
 
         supplier_add_product_supplier_query = """INSERT INTO "ProductSuppliers" (product_id, supplier_id, supply_price, supply_date)
         VALUES (%s, %s, %s, %s)
