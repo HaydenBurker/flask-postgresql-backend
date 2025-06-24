@@ -1,7 +1,6 @@
 from db import connection, cursor
 
 from .base_model import Model
-from util.records import base_record_object
 
 class User(Model):
     primary_key = "user_id"
@@ -37,6 +36,3 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
 )""")
 
 connection.commit()
-
-def base_user_object(user):
-    return base_record_object(user, ["user_id", "first_name", "last_name", "email", "active", "created_at", "updated_at"])

@@ -1,6 +1,5 @@
 from db import connection, cursor
 
-from util.records import base_record_object
 from .base_model import Model
 
 class Review(Model):
@@ -29,6 +28,3 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Reviews" (
 )""")
 
 connection.commit()
-
-def base_review_object(review):
-    return base_record_object(review, ["review_id", "customer_id", "product_id", "rating", "comment", "created_at"])

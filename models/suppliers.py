@@ -1,6 +1,5 @@
 from db import connection, cursor
 
-from util.records import base_record_object
 from .base_model import Model
 
 class Supplier(Model):
@@ -30,6 +29,3 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Suppliers" (
 )""")
 
 connection.commit()
-
-def base_supplier_object(supplier):
-    return base_record_object(supplier, ["supplier_id", "company_name", "contact_name", "email", "phone_number", "address", "active"])

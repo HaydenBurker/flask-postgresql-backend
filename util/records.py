@@ -5,9 +5,6 @@ def serialize(obj):
         return obj and obj.isoformat()
     return obj
 
-def base_record_object(record, fields):
-    return {k: serialize(v) for (k, v) in zip(fields, record)}
-
 def create_record_mapping(records, base_record_object, key=None, many=False):
     record_mapping = {}
 

@@ -1,7 +1,6 @@
 from db import connection, cursor
 
 from .base_model import Model
-from util.records import base_record_object
 
 class OrderItem(Model):
     primary_key = "order_item_id"
@@ -34,6 +33,3 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "OrderItems" (
 )""")
 
 connection.commit()
-
-def base_order_item_object(order_item):
-    return base_record_object(order_item, ["order_item_id", "order_id", "product_id", "quantity", "unit_price", "total_price"])

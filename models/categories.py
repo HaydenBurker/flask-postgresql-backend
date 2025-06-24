@@ -1,6 +1,5 @@
 from db import connection, cursor
 
-from util.records import base_record_object
 from .base_model import Model
 
 class Category(Model):
@@ -22,6 +21,3 @@ cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
 )""")
 
 connection.commit()
-
-def base_category_object(category):
-    return base_record_object(category, ["category_id", "name", "description"])
