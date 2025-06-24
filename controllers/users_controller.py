@@ -3,16 +3,16 @@ from flask import jsonify
 from db import cursor
 from .base_controller import BaseController
 
-from models.product_suppliers import base_product_supplier_object
-from models.order_items import base_order_item_object
-from models.categories import base_category_object
-from models.discounts import base_discount_object
-from models.shippings import base_shipping_object
-from models.suppliers import base_supplier_object
-from models.payments import base_payment_object
-from models.products import base_product_object
-from models.reviews import base_review_object
-from models.orders import base_order_object
+from models.product_suppliers import ProductSupplier
+from models.order_items import OrderItem
+from models.categories import Category
+from models.discounts import Discount
+from models.shippings import Shipping
+from models.suppliers import Supplier
+from models.payments import Payment
+from models.products import Product
+from models.reviews import Review
+from models.orders import Order
 from models.users import User
 
 from util.records import create_record_mapping
@@ -25,22 +25,22 @@ def create_user_object(user_data, many=False):
 
     reviews = []
     if user_ids:
-        reviews_query = """SELECT review_id, customer_id, product_id, rating, comment, created_at FROM "Reviews"
+        reviews_query = """SELECT * FROM "Reviews"
         WHERE customer_id IN %s"""
         cursor.execute(reviews_query, (user_ids,))
-        reviews = cursor.fetchall()
-    user_reviews_mapping = create_record_mapping(reviews, base_review_object, key="customer_id", many=True)
+        reviews = Review.load_many(cursor.fetchall())
+    user_reviews_mapping = create_record_mapping(reviews, key="customer_id", many=True)
 
     products = []
     if user_ids:
-        review_product_ids = tuple(set(review[2] for review in reviews))
+        review_product_ids = tuple(set(review.product_id for review in reviews))
         products_query = """SELECT * FROM "Products"
         WHERE created_by_id IN %s OR product_id IN %s"""
         cursor.execute(products_query, (user_ids, review_product_ids or user_ids))
-        products = cursor.fetchall()
-    user_product_mapping = create_record_mapping(products, base_product_object, key="created_by_id", many=True)
-    product_product_mapping = create_record_mapping(products, base_product_object, key="product_id")
-    product_ids = tuple(set(product[0] for product in products))
+        products = Product.load_many(cursor.fetchall())
+    user_product_mapping = create_record_mapping(products, key="created_by_id", many=True)
+    product_product_mapping = create_record_mapping(products)
+    product_ids = tuple(set(product.product_id for product in products))
 
     categories = []
     if product_ids:
@@ -48,33 +48,33 @@ def create_user_object(user_data, many=False):
         INNER JOIN "ProductsCategoriesXref" ON "ProductsCategoriesXref".category_id = "Categories".category_id
         WHERE "ProductsCategoriesXref".product_id IN %s"""
         cursor.execute(categories_query, (product_ids,))
-        categories = cursor.fetchall()
-    product_category_mapping = create_record_mapping(categories, base_category_object, many=True)
+        categories = Category.load_many(cursor.fetchall(), ["product_id"])
+    product_category_mapping = create_record_mapping(categories, many=True)
 
     orders = []
     if user_ids:
         orders_query = """SELECT * FROM "Orders"
         WHERE customer_id IN %s"""
         cursor.execute(orders_query, (user_ids,))
-        orders = cursor.fetchall()
-    user_order_mapping = create_record_mapping(orders, base_order_object, key="customer_id", many=True)
-    order_ids = tuple(set(order[0] for order in orders))
+        orders = Order.load_many(cursor.fetchall())
+    user_order_mapping = create_record_mapping(orders, key="customer_id", many=True)
+    order_ids = tuple(set(order.order_id for order in orders))
 
     shippings = []
     if order_ids:
         shippings_query = """SELECT * FROM "Shippings"
         WHERE order_id IN %s"""
         cursor.execute(shippings_query, (order_ids,))
-        shippings = cursor.fetchall()
-    order_shipping_mapping = create_record_mapping(shippings, base_shipping_object, key="order_id")
+        shippings = Shipping.load_many(cursor.fetchall())
+    order_shipping_mapping = create_record_mapping(shippings, key="order_id")
 
     payments = []
     if order_ids:
         payments_query = """SELECT * FROM "Payments"
         WHERE order_id IN %s"""
         cursor.execute(payments_query, (order_ids,))
-        payments = cursor.fetchall()
-    order_payment_mapping = create_record_mapping(payments, base_payment_object, key="order_id", many=True)
+        payments = Payment.load_many(cursor.fetchall())
+    order_payment_mapping = create_record_mapping(payments, key="order_id", many=True)
 
     discounts = []
     if order_ids:
@@ -82,24 +82,24 @@ def create_user_object(user_data, many=False):
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
         WHERE order_id IN %s"""
         cursor.execute(discounts_query, (order_ids,))
-        discounts = cursor.fetchall()
-    order_discounts_mapping = create_record_mapping(discounts, base_discount_object, many=True)
+        discounts = Discount.load_many(cursor.fetchall())
+    order_discounts_mapping = create_record_mapping(discounts, many=True)
 
     order_items = []
     if order_ids:
         order_items_query = """SELECT * FROM "OrderItems"
         WHERE order_id IN %s"""
         cursor.execute(order_items_query, (order_ids,))
-        order_items = cursor.fetchall()
-    order_order_items_mapping = create_record_mapping(order_items, base_order_item_object, key="order_id", many=True)
+        order_items = OrderItem.load_many(cursor.fetchall())
+    order_order_items_mapping = create_record_mapping(order_items, key="order_id", many=True)
 
     product_suppliers = []
     if product_ids:
         product_supplier_query = """SELECT * FROM "ProductSuppliers"
         WHERE product_id IN %s"""
         cursor.execute(product_supplier_query, (product_ids,))
-        product_suppliers = cursor.fetchall()
-    supplier_product_supplier_mapping = create_record_mapping(product_suppliers, base_product_supplier_object, key="product_id", many=True)
+        product_suppliers = ProductSupplier.load_many(cursor.fetchall())
+    supplier_product_supplier_mapping = create_record_mapping(product_suppliers, key="product_id", many=True)
 
     supplier_ids = set()
     for product_suppliers in supplier_product_supplier_mapping.values():
@@ -109,8 +109,8 @@ def create_user_object(user_data, many=False):
         suppliers_query = """SELECT * FROM "Suppliers"
         WHERE supplier_id IN %s"""
         cursor.execute(suppliers_query, (tuple(supplier_ids),))
-        suppliers = cursor.fetchall()
-        supplier_product_mapping = create_record_mapping(suppliers, base_supplier_object, key="supplier_id")
+        suppliers = Supplier.load_many(cursor.fetchall())
+        supplier_product_mapping = create_record_mapping(suppliers)
 
 
     for i, user in enumerate(users):

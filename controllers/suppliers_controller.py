@@ -69,7 +69,7 @@ class SuppliersController(BaseController):
         cursor.execute(supplier_query, (supplier_id,))
         supplier = cursor.fetchone()
         if not supplier:
-            return jsonify({"message": "supplier not found"}), 404        
+            return jsonify({"message": "supplier not found"}), 404
         supplier = Supplier().load(supplier)
 
         supplier_add_product_supplier_query = """INSERT INTO "ProductSuppliers" (product_id, supplier_id, supply_price, supply_date)
