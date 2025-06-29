@@ -10,15 +10,16 @@ def table_name_to_model(table_name):
     return cls_map.get(table_name)
 
 def export_table(model, file_name):
-    fields = model().fields
+    fields = model().dump_update().keys()
+
     with open(f"csv/export/{file_name}", "w") as export_file:
-        query = f'SELECT {",".join(fields)} FROM "{model.tablename}"'
+        query = f'SELECT * FROM "{model.tablename}"'
         cursor.execute(query)
-        records = cursor.fetchall()
+        records = model.load_many(cursor.fetchall())
 
         csv_writer = csv.writer(export_file)
         csv_writer.writerow(fields)
-        csv_writer.writerows(records)
+        csv_writer.writerows([record.dump_update().values() for record in records])
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
