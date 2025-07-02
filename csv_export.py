@@ -17,9 +17,9 @@ def export_table(model, file_name):
         cursor.execute(query)
         records = model.load_many(cursor.fetchall())
 
-        csv_writer = csv.writer(export_file)
-        csv_writer.writerow(fields)
-        csv_writer.writerows([record.dump_update().values() for record in records])
+        csv_writer = csv.DictWriter(export_file, fieldnames=fields)
+        csv_writer.writeheader()
+        csv_writer.writerows([record.dump_update() for record in records])
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
