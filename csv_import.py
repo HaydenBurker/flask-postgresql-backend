@@ -7,6 +7,7 @@ from util.datetime import datetime_now
 from db import connection, cursor
 
 from models.base_model import Model
+from models.users import User
 
 def table_name_to_model(table_name):
     cls_map = {cls.tablename: cls for cls in Model.__subclasses__()}
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     elif len(sys.argv) > 1:
         with open(f"csv/import/{sys.argv[1]}", "r") as import_file:
             csv_reader = csv.DictReader(import_file)
-            fields = ["user_id", "first_name", "last_name", "email", "password", "active", "created_at", "updated_at"]
+            fields = User().dump_update().keys()
 
             insert_query = f"""INSERT INTO "Users" ({",".join(fields)})
             VALUES """
@@ -59,8 +60,11 @@ if __name__ == "__main__":
             default_values = {field: value for field, value in zip(fields, [lambda: str(uuid.uuid4()), "", "", "", "", True, current_date, current_date])}
 
             for row in csv_reader:
-                record_row = [row[field] if field in row else default_values[field] for field in fields]
-                record_row = tuple([value() if type(value) == FunctionType else value for value in record_row])
+                row = {k:v for k, v in row.items() if v != ""}
+                row["user_id"] = row.get("user_id", str(uuid.uuid4()))
+                row["created_at"] = row.get("created_at", current_date)
+                row["updated_at"] = row.get("updated_at", current_date)
+                record_row = tuple(User().load(row).dump_update().values())
                 records += record_row
 
             record_count = csv_reader.line_num - 1
