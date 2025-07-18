@@ -3,11 +3,7 @@ import csv
 
 from db import cursor
 
-from models.base_model import Model
-
-def table_name_to_model(table_name):
-    cls_map = {cls.tablename: cls for cls in Model.__subclasses__()}
-    return cls_map.get(table_name)
+from util.models import table_name_to_model
 
 def export_table(model, file_name):
     fields = model().dump_update().keys()

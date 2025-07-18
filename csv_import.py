@@ -1,17 +1,13 @@
 import sys
 import csv
 import uuid
-from types import FunctionType
-from util.datetime import datetime_now
 
 from db import connection, cursor
 
-from models.base_model import Model
 from models.users import User
+from util.datetime import datetime_now
+from util.models import table_name_to_model
 
-def table_name_to_model(table_name):
-    cls_map = {cls.tablename: cls for cls in Model.__subclasses__()}
-    return cls_map.get(table_name)
 
 def import_table(model, file_name):
     fields = model().dump_update().keys()
