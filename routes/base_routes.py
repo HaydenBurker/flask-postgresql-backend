@@ -11,3 +11,4 @@ class BaseRoutes:
         self.blueprint.add_url_rule(f"/{name}/<record_id>", methods=["GET"], view_func=controller.get_record_by_id)
         self.blueprint.add_url_rule(f"/{name}/<record_id>", methods=["PUT"], view_func=controller.update_record)
         self.blueprint.add_url_rule(F"/{name}/<record_id>", methods=["DELETE"], view_func=controller.delete_record)
+        self.blueprint.add_url_rule(f"/{plural_name}/update-many", methods=["PUT"], view_func=controller.update_many_records)

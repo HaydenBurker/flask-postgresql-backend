@@ -130,3 +130,53 @@ class BaseController:
             return jsonify({"message": "unable to delete record"}), 400
 
         return jsonify({"message": "record deleted"}), 200
+    
+
+    def update_many_records(self):
+        post_data = request.json
+        update_data = post_data.get("update")
+
+        record_ids = set()
+        for record in update_data:
+            record_id = record.get(self.model.primary_key)
+            if not validate_uuid4(record_id):
+                return jsonify({"message": "invalid record id"}), 400
+            record_ids.add(record_id)
+
+        records = []
+        if len(record_ids) > 0:
+            select_query = f"""SELECT * from "{self.model.tablename}"
+            WHERE {self.model.primary_key} IN %s"""
+            cursor.execute(select_query, (tuple(record_ids),))
+
+            records = cursor.fetchall()
+            fields = self.model().dump_update().keys()
+            values = f'({",".join("%s" for _ in fields)})'
+            query_fields = ",".join(f'{field} = "t2".{field}' + ("::uuid" if "_id" in field else "::timestamp" if "_date" in field else "") for field in fields if field != self.model.primary_key)
+
+            new_update_data = []
+            for i, record in enumerate(records):
+                record_data = update_data[i]
+                record_data["updated_at"] = datetime_now()
+                record = self.model().load(record).load(record_data)
+                
+                new_update_data += record.dump_update().values()
+
+            values = ",".join(values for _ in records)
+            update_query = f"""UPDATE "{self.model.tablename}" SET
+            {query_fields}
+            FROM (VALUES
+            {values}
+            ) AS t2({",".join(fields)})
+            WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid"""
+
+            cursor.execute(update_query, new_update_data)
+            connection.commit()
+
+            select_query = f"""SELECT * from "{self.model.tablename}"
+            WHERE {self.model.primary_key} IN %s"""
+            cursor.execute(select_query, (tuple(record_ids),))
+            records = cursor.fetchall()
+
+        update_records = self.create_record_object(self.model.load_many(records), many=True)
+        return jsonify({"message": "records updated", "results": update_records}), 200
