@@ -130,18 +130,18 @@ class BaseController:
             return jsonify({"message": "unable to delete record"}), 400
 
         return jsonify({"message": "record deleted"}), 200
-    
 
     def update_many_records(self):
         post_data = request.json
         update_data = post_data.get("update")
 
         record_ids = set()
+        update_data_map = {}
         for record in update_data:
             record_id = record.get(self.model.primary_key)
-            if not validate_uuid4(record_id):
-                return jsonify({"message": "invalid record id"}), 400
-            record_ids.add(record_id)
+            if validate_uuid4(record_id):
+                record_ids.add(record_id)
+                update_data_map[record_id] = record
 
         records = []
         if len(record_ids) > 0:
@@ -155,11 +155,11 @@ class BaseController:
             query_fields = ",".join(f'{field} = "t2".{field}' + ("::uuid" if "_id" in field else "::timestamp" if "_date" in field else "") for field in fields if field != self.model.primary_key)
 
             new_update_data = []
-            for i, record in enumerate(records):
-                record_data = update_data[i]
+            for record in records:
+                record = self.model().load(record)
+                record_data = update_data_map[getattr(record, record.primary_key)]
                 record_data["updated_at"] = datetime_now()
-                record = self.model().load(record).load(record_data)
-                
+                record.load(record_data)
                 new_update_data += record.dump_update().values()
 
             values = ",".join(values for _ in records)
@@ -170,6 +170,7 @@ class BaseController:
             ) AS t2({",".join(fields)})
             WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid"""
 
+            print(update_query, new_update_data)
             cursor.execute(update_query, new_update_data)
             connection.commit()
 
