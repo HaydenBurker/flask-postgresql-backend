@@ -143,7 +143,7 @@ class BaseController:
                 record_ids.add(record_id)
                 update_data_map[record_id] = record
 
-        records = []
+        update_records = []
         if len(record_ids) > 0:
             select_query = f"""SELECT * from "{self.model.tablename}"
             WHERE {self.model.primary_key} IN %s"""
@@ -160,6 +160,7 @@ class BaseController:
                 record_data = update_data_map[getattr(record, record.primary_key)]
                 record_data["updated_at"] = datetime_now()
                 record.load(record_data)
+                update_records.append(record)
                 new_update_data += record.dump_update().values()
 
             values = ",".join(values for _ in records)
@@ -170,14 +171,8 @@ class BaseController:
             ) AS t2({",".join(fields)})
             WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid"""
 
-            print(update_query, new_update_data)
             cursor.execute(update_query, new_update_data)
             connection.commit()
 
-            select_query = f"""SELECT * from "{self.model.tablename}"
-            WHERE {self.model.primary_key} IN %s"""
-            cursor.execute(select_query, (tuple(record_ids),))
-            records = cursor.fetchall()
-
-        update_records = self.create_record_object(self.model.load_many(records), many=True)
+        update_records = self.create_record_object(update_records, many=True)
         return jsonify({"message": "records updated", "results": update_records}), 200
