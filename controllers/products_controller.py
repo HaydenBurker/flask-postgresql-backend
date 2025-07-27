@@ -91,7 +91,7 @@ class ProductsController(BaseController):
         [category_id] = cursor.fetchone()
         if not category_id:
             return jsonify({"message": "category not found"}), 404
-        
+
         product_add_category_query = """INSERT INTO "ProductsCategoriesXref" (product_id, category_id)
         VALUES (%s, %s) RETURNING *"""
         try:

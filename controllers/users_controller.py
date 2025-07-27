@@ -173,7 +173,7 @@ class UsersController(BaseController):
         record = self.model().load(record)
 
         return jsonify({"message": "record found", "results": create_user_object(record)}), 200
-    
+
     def get_all_nested_records(self):
         get_all_query = f'SELECT * FROM "{self.model.tablename}"'
         cursor.execute(get_all_query)

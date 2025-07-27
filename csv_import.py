@@ -22,7 +22,7 @@ def import_table(model, file_name):
             row = {k:v for k, v in row.items() if v != ""}
             record_row = tuple(model().load(row).dump_update().values())
             records += record_row
-        
+
         record_count = csv_reader.line_num - 1
 
         query += ",".join(values for _ in range(record_count))

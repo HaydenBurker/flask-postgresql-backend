@@ -48,7 +48,7 @@ class BaseController:
         record = cursor.fetchone()
         if not record:
             return jsonify({"message": "record not found"}), 404
-        
+
         record = self.model().load(record)
 
         return jsonify({"message": "record found", "results": self.create_record_object(record)}), 200

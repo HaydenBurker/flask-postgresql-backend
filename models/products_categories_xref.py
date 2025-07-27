@@ -10,7 +10,6 @@ class ProductCategory(Model):
         self.category_id = category_id
         self.set_fields()
 
-
 cursor.execute("""CREATE TABLE IF NOT EXISTS "ProductsCategoriesXref" (
     product_id UUID NOT NULL,
     category_id UUID NOT NULL,
