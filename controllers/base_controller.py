@@ -160,7 +160,6 @@ class BaseController:
                 record_data = update_data_map[getattr(record, record.primary_key)]
                 record_data["updated_at"] = datetime_now()
                 record.load(record_data)
-                update_records.append(record)
                 new_update_data += record.dump_update().values()
 
             values = ",".join(values for _ in records)
@@ -169,9 +168,10 @@ class BaseController:
             FROM (VALUES
             {values}
             ) AS t2({",".join(fields)})
-            WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid"""
+            WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid RETURNING *"""
 
             cursor.execute(update_query, new_update_data)
+            update_records = self.model().load_many(cursor.fetchall())
             connection.commit()
 
         update_records = self.create_record_object(update_records, many=True)
