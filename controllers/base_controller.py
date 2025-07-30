@@ -131,6 +131,35 @@ class BaseController:
 
         return jsonify({"message": "record deleted"}), 200
 
+    def add_many_records(self):
+        post_data = request.json
+        add_data = post_data.get("add")
+
+        record_count = len(add_data)
+        add_records = []
+
+        if record_count > 0:
+            for record in add_data:
+
+                current_datetime = datetime_now()
+
+                record["created_at"] = current_datetime
+                record["updated_at"] = current_datetime
+                record = self.model().load(record)
+                record.generate_key()
+                add_records += record.dump_update().values()
+
+            fields = self.model().dump_update().keys()
+            query = f'INSERT INTO "{self.model.tablename}" ({",".join(fields)}) VALUES '
+            values = f'({",".join("%s" for _ in fields)})'
+            query += ",".join(values for _ in range(record_count)) + " RETURNING *"
+            cursor.execute(query, add_records)
+            add_records = self.model.load_many(cursor.fetchall())
+            connection.commit()
+
+            add_records = self.create_record_object(add_records, many=True)
+        return jsonify({"message": "added records", "results": add_records}), 201
+
     def update_many_records(self):
         post_data = request.json
         update_data = post_data.get("update")
