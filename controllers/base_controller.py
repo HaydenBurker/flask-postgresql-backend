@@ -179,6 +179,9 @@ class BaseController:
             cursor.execute(select_query, (tuple(record_ids),))
 
             records = cursor.fetchall()
+            record_ids = tuple(getattr(self.model().load(record), self.model.primary_key) for record in records)
+
+        if len(record_ids) > 0:
             fields = self.model().dump_update().keys()
             values = f'({",".join("%s" for _ in fields)})'
             query_fields = ",".join(f'{field} = "t2".{field}' + ("::uuid" if "_id" in field else "::timestamp" if "_date" in field else "") for field in fields if field != self.model.primary_key)
