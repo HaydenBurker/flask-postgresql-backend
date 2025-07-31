@@ -205,3 +205,26 @@ class BaseController:
 
         update_records = self.create_record_object(update_records, many=True)
         return jsonify({"message": "records updated", "results": update_records}), 200
+
+    def delete_many_records(self):
+        post_data = request.json
+        delete_data = post_data.get("delete")
+
+        record_ids = set()
+        for record_id in delete_data:
+            if validate_uuid4(record_id):
+                record_ids.add(record_id)
+
+        if len(record_ids) > 0:
+            select_query = f"""SELECT {self.model.primary_key} from "{self.model.tablename}"
+            WHERE {self.model.primary_key} IN %s"""
+            cursor.execute(select_query, (tuple(record_ids),))
+            record_ids = tuple(record[0] for record in cursor.fetchall())
+
+        if len(record_ids) > 0:
+            delete_query = f"""DELETE FROM "{self.model.tablename}"
+            WHERE {self.model.primary_key} IN %s"""
+            cursor.execute(delete_query, (record_ids,))
+            connection.commit()
+
+        return jsonify({"message": "records deleted"}), 200
