@@ -9,6 +9,7 @@ class BaseRoutes:
         self.blueprint.add_url_rule(f"/{name}", methods=["POST"], view_func=controller.add_record)
         self.blueprint.add_url_rule(f"/{plural_name}", methods=["GET"], view_func=controller.get_all_records)
         self.blueprint.add_url_rule(f"/{name}/<record_id>", methods=["GET"], view_func=controller.get_record_by_id)
+        self.blueprint.add_url_rule(f"/{plural_name}/paginated", methods=["GET"], view_func=controller.get_records_paginated)
         self.blueprint.add_url_rule(f"/{name}/<record_id>", methods=["PUT"], view_func=controller.update_record)
         self.blueprint.add_url_rule(F"/{name}/<record_id>", methods=["DELETE"], view_func=controller.delete_record)
         self.blueprint.add_url_rule(F"/{plural_name}/add-many", methods=["POST"], view_func=controller.add_many_records)
