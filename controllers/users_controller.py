@@ -178,7 +178,7 @@ class UsersController(BaseController):
         get_all_query = f'SELECT * FROM "{self.model.tablename}"'
         cursor.execute(get_all_query)
 
-        records = [self.model().load(record) for record in cursor.fetchall()]
+        records = self.model.load_many(cursor.fetchall())
         records = create_user_object(records, many=True)
 
         return jsonify({"message": "records found", "results": records}), 200

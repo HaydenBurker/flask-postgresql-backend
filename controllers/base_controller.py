@@ -34,7 +34,7 @@ class BaseController:
         get_all_query = f'SELECT * FROM "{self.model.tablename}"'
         cursor.execute(get_all_query)
 
-        records = [self.model().load(record) for record in cursor.fetchall()]
+        records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
         return jsonify({"message": "records found", "results": records}), 200
@@ -220,7 +220,7 @@ class BaseController:
             WHERE "{self.model.tablename}".{self.model.primary_key} = "t2".{self.model.primary_key}::uuid RETURNING *"""
 
             cursor.execute(update_query, new_update_data)
-            update_records = self.model().load_many(cursor.fetchall())
+            update_records = self.model.load_many(cursor.fetchall())
             connection.commit()
 
         update_records = self.create_record_object(update_records, many=True)
