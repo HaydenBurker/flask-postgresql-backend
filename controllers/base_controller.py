@@ -56,11 +56,11 @@ class BaseController:
     def get_records_paginated(self):
         query_params = request.args
 
-        page = query_params.get("page") or 0
-        page = max(0, int(page))
+        page = query_params.get("page")
+        page = int(page) if page and page.isdigit() else 0
 
-        page_size = query_params.get("page_size") or 10
-        page_size = max(1, int(page_size))
+        page_size = query_params.get("page_size")
+        page_size = int(page_size) if page_size and page_size.isdigit() and int(page_size) > 0 else 10
 
         get_query = f"""SELECT * FROM "{self.model.tablename}"
         LIMIT %s OFFSET %s"""
