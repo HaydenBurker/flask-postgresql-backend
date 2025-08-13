@@ -62,9 +62,23 @@ class BaseController:
         page_size = query_params.get("page_size")
         page_size = int(page_size) if page_size and page_size.isdigit() and int(page_size) > 0 else 10
 
+        order = query_params.get("order")
+        fields = self.model().dump_update().keys()
+        order_by = ""
+
+        if order in fields:
+            order_direction = ""
+            if "asc" in query_params:
+                order_direction = "ASC"
+            if "desc" in query_params:
+                order_direction = "DESC"
+            order_by = f"ORDER BY {order} {order_direction}"
+
         get_query = f"""SELECT * FROM "{self.model.tablename}"
+        {order_by}
         LIMIT %s OFFSET %s"""
-        cursor.execute(get_query, (page_size, page_size * page,))
+
+        cursor.execute(get_query, (page_size, page_size * page))
         records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
