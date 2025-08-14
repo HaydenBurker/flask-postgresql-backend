@@ -5,7 +5,7 @@ from util.validate_uuid import validate_uuid4
 from util.datetime import datetime_now
 
 class BaseController:
-    create_record_object = None
+    create_record_object = lambda _, record_data, many=False: [record.dump() for record in record_data] if many else record_data.dump()
     model = None
 
     def add_record(self):

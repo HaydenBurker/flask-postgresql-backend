@@ -155,7 +155,6 @@ def create_user_object(user_data, many=False):
     return users if many else users[0]
 
 class UsersController(BaseController):
-    create_record_object = lambda _, user_data, many=False: [user.dump() for user in user_data] if many else user_data.dump()
     model = User
 
     def get_nested_records(self, record_id):
