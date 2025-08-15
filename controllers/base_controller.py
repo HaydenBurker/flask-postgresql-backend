@@ -62,8 +62,23 @@ class BaseController:
         page_size = query_params.get("page_size")
         page_size = int(page_size) if page_size and page_size.isdigit() and int(page_size) > 0 else 10
 
-        order = query_params.get("order")
+        filters = []
         fields = self.model().dump_update().keys()
+
+        for field in fields:
+            value = query_params.get(field)
+            if value:
+                filters.append((field, value))
+
+        where = ""
+        filter_values = tuple()
+
+        if len(filters) > 0:
+            filter_fields, filter_values = tuple(zip(*filters))
+            filter_values = tuple(f"%{value}%" for value in filter_values)
+            where = "WHERE " + " AND ".join([f"{field}::varchar ILIKE %s" for field in filter_fields])
+
+        order = query_params.get("order")
         order_by = ""
 
         if order in fields:
@@ -75,10 +90,11 @@ class BaseController:
             order_by = f"ORDER BY {order} {order_direction}"
 
         get_query = f"""SELECT * FROM "{self.model.tablename}"
+        {where}
         {order_by}
         LIMIT %s OFFSET %s"""
 
-        cursor.execute(get_query, (page_size, page_size * page))
+        cursor.execute(get_query, (*filter_values, page_size, page_size * page))
         records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
