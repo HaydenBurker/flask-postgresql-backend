@@ -98,7 +98,22 @@ class BaseController:
         records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
-        return jsonify({"message": "records found", "results": records}), 200
+        count_query = f"""SELECT COUNT(*) FROM "{self.model.tablename}"
+        {where}"""
+        cursor.execute(count_query, filter_values)
+        total = cursor.fetchone()[0]
+
+        metadata = {
+            "total_count": total,
+            "record_count": len(records)
+        }
+
+        if page > 0:
+            metadata["previous"] = page - 1
+        if page < (total - 1) // page_size:
+            metadata["next"] = page + 1
+
+        return jsonify({"message": "records found", "results": records, "metadata": metadata}), 200
 
     def update_record(self, record_id):
         if not validate_uuid4(record_id):
