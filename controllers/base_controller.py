@@ -115,6 +115,29 @@ class BaseController:
 
         return jsonify({"message": "records found", "results": records, "metadata": metadata}), 200
 
+    def get_records_cursor_paginated(self):
+        query_params = request.args
+        record_id = query_params.get("record_id")
+        page_size = query_params.get("page_size")
+        page_size = int(page_size) if page_size and page_size.isdigit() and int(page_size) > 0 else 10
+
+        where = ""
+        where_values = tuple()
+        if record_id:
+            where = f"WHERE {self.model.primary_key} > %s"
+            where_values = (record_id,)
+
+        get_query = f"""SELECT * FROM "{self.model.tablename}"
+        {where}
+        ORDER BY {self.model.primary_key}
+        LIMIT %s"""
+
+        cursor.execute(get_query, (*where_values, page_size))
+        records = self.model.load_many(cursor.fetchall())
+        records = self.create_record_object(records, many=True)
+
+        return jsonify({"message": "records found", "results": records}), 200
+
     def update_record(self, record_id):
         if not validate_uuid4(record_id):
             return jsonify({"message": "invalid record id"}), 400
