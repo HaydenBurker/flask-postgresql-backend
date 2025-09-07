@@ -38,13 +38,14 @@ def random_letters():
     return "".join(random.choice((string.ascii_lowercase)) for _ in range(random_length))
 
 def create_records(records, model):
-    fields = model().dump_update().keys()
-    record_field_count = len(fields)
-    user_count = len(records) // record_field_count
-    query = f"""INSERT INTO "{model.tablename}" ({",".join(fields)}) VALUES """
-    values = f"({','.join('%s' for _ in range(record_field_count))})"
-    query += ",".join(values for _ in range(user_count))
-    cursor.execute(query, records)
+    if len(records):
+        fields = model().dump_update().keys()
+        record_field_count = len(fields)
+        user_count = len(records) // record_field_count
+        query = f"""INSERT INTO "{model.tablename}" ({",".join(fields)}) VALUES """
+        values = f"({','.join('%s' for _ in range(record_field_count))})"
+        query += ",".join(values for _ in range(user_count))
+        cursor.execute(query, records)
 
 def populate_database():
     current_date = datetime_now()
@@ -85,7 +86,7 @@ def populate_database():
 
     records = []
     category_ids = []
-    for _ in range(10):
+    for _ in range(Total.categories):
         category_id = str(uuid.uuid4())
         category_ids.append(category_id)
         records += [category_id, random_letters(), random_letters()]
