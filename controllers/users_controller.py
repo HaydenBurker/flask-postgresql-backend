@@ -49,7 +49,7 @@ def create_user_object(user_data, many=False):
         WHERE "ProductsCategoriesXref".product_id IN %s"""
         cursor.execute(categories_query, (product_ids,))
         categories = Category.load_many(cursor.fetchall(), ["product_id"])
-    product_category_mapping = create_record_mapping(categories, many=True)
+    product_category_mapping = create_record_mapping(categories, key="product_id", many=True)
 
     orders = []
     if user_ids:
