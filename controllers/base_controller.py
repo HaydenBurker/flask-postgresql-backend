@@ -98,22 +98,28 @@ class BaseController:
         records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
-        count_query = f"""SELECT COUNT(*) FROM "{self.model.tablename}"
-        {where}"""
-        cursor.execute(count_query, filter_values)
-        total = cursor.fetchone()[0]
+        include_metadata = "include_metadata" in query_params
+        json_result = {"message": "records found", "results": records}
 
-        metadata = {
-            "total_count": total,
-            "record_count": len(records)
-        }
+        if include_metadata:
+            count_query = f"""SELECT COUNT(*) FROM "{self.model.tablename}"
+            {where}"""
+            cursor.execute(count_query, filter_values)
+            total = cursor.fetchone()[0]
 
-        if page > 0:
-            metadata["previous"] = page - 1
-        if page < (total - 1) // page_size:
-            metadata["next"] = page + 1
+            metadata = {
+                "total_count": total,
+                "record_count": len(records)
+            }
 
-        return jsonify({"message": "records found", "results": records, "metadata": metadata}), 200
+            if page > 0:
+                metadata["previous"] = page - 1
+            if page < (total - 1) // page_size:
+                metadata["next"] = page + 1
+
+            json_result["metadata"] = metadata
+
+        return jsonify(json_result), 200
 
     def get_records_cursor_paginated(self):
         query_params = request.args
