@@ -133,12 +133,31 @@ class BaseController:
             where = f"WHERE {self.model.primary_key} > %s"
             where_values = (record_id,)
 
+        filters = []
+        fields = self.model().dump_update().keys()
+
+        for field in fields:
+            value = query_params.get(field)
+            if value:
+                filters.append((field, value))
+
+        filter_values = tuple()
+
+        if len(filters) > 0:
+            filter_fields, filter_values = tuple(zip(*filters))
+            filter_values = tuple(f"%{value}%" for value in filter_values)
+            if not where:
+                where = "WHERE "
+            else:
+                where += " AND "
+            where += " AND ".join([f"{field}::varchar ILIKE %s" for field in filter_fields])
+
         get_query = f"""SELECT * FROM "{self.model.tablename}"
         {where}
         ORDER BY {self.model.primary_key}
         LIMIT %s"""
 
-        cursor.execute(get_query, (*where_values, page_size))
+        cursor.execute(get_query, (*where_values, *filter_values, page_size))
         records = self.model.load_many(cursor.fetchall())
         records = self.create_record_object(records, many=True)
 
