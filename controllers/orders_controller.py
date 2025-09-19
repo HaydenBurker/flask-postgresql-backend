@@ -34,7 +34,7 @@ def create_order_object(order_data, many=False):
     order_discount_mapping = create_record_mapping(discounts, key="order_id", many=True)
 
     for i, order in enumerate(orders):
-        orders[i]["customer"] = order_user_mapping.get(order["customer_id"], [])
+        orders[i]["customer"] = order_user_mapping.get(order["customer_id"])
         orders[i]["discounts"] = order_discount_mapping.get(order["order_id"], [])
         del orders[i]["customer_id"]
 

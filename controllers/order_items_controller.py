@@ -25,8 +25,8 @@ def create_order_item_object(order_item_data, many=False):
         order_item_product_mapping = create_record_mapping(products)
 
         for i, order_item in enumerate(order_items):
-            order_items[i]["orders"] = order_item_order_mapping.get(order_item["order_id"])
-            order_items[i]["products"] = order_item_product_mapping.get(order_item["product_id"])
+            order_items[i]["order"] = order_item_order_mapping.get(order_item["order_id"])
+            order_items[i]["product"] = order_item_product_mapping.get(order_item["product_id"])
             del order_items[i]["order_id"]
             del order_items[i]["product_id"]
 
