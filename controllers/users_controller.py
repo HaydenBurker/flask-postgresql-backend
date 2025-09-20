@@ -82,8 +82,8 @@ def create_user_object(user_data, many=False):
         INNER JOIN "OrdersDiscountsXref" ON "OrdersDiscountsXref".discount_id = "Discounts".discount_id
         WHERE order_id IN %s"""
         cursor.execute(discounts_query, (order_ids,))
-        discounts = Discount.load_many(cursor.fetchall())
-    order_discounts_mapping = create_record_mapping(discounts, many=True)
+        discounts = Discount.load_many(cursor.fetchall(), ["order_id"])
+    order_discounts_mapping = create_record_mapping(discounts, key="order_id", many=True)
 
     order_items = []
     if order_ids:
