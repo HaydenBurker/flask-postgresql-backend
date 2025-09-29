@@ -14,18 +14,23 @@ class Supplier(Model):
         self.phone_number = phone_number
         self.address = address
         self.active = active
-        self.set_fields()
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Suppliers" (
-    supplier_id UUID NOT NULL,
-    company_name VARCHAR NOT NULL,
-    contact_name VARCHAR,
-    email VARCHAR,
-    phone_number VARCHAR,
-    address VARCHAR,
-    active BOOLEAN NOT NULL,
-    PRIMARY KEY (supplier_id),
-    UNIQUE (company_name)
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Suppliers" (
+            supplier_id UUID NOT NULL,
+            company_name VARCHAR NOT NULL,
+            contact_name VARCHAR,
+            email VARCHAR,
+            phone_number VARCHAR,
+            address VARCHAR,
+            active BOOLEAN NOT NULL,
+            PRIMARY KEY (supplier_id),
+            UNIQUE (company_name)
+        )""")
+
+        connection.commit()
+
+Supplier.init_model()

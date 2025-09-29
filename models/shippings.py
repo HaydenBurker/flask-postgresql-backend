@@ -15,19 +15,24 @@ class Shipping(Model):
         self.tracking_number = tracking_number
         self.shipping_status = shipping_status
         self.shipped_date = shipped_date
-        self.set_fields()
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Shippings" (
-    shipping_id UUID NOT NULL,
-    order_id UUID NOT NULL UNIQUE,
-    shipping_address VARCHAR NOT NULL,
-    shipping_label VARCHAR NOT NULL,
-    shipping_cost NUMERIC NOT NULL,
-    tracking_number VARCHAR NOT NULL,
-    shipping_status VARCHAR NOT NULL,
-    shipped_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (shipping_id),
-    FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Shippings" (
+            shipping_id UUID NOT NULL,
+            order_id UUID NOT NULL UNIQUE,
+            shipping_address VARCHAR NOT NULL,
+            shipping_label VARCHAR NOT NULL,
+            shipping_cost NUMERIC NOT NULL,
+            tracking_number VARCHAR NOT NULL,
+            shipping_status VARCHAR NOT NULL,
+            shipped_date TIMESTAMP WITH TIME ZONE NOT NULL,
+            PRIMARY KEY (shipping_id),
+            FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE
+        )""")
+
+        connection.commit()
+
+Shipping.init_model()

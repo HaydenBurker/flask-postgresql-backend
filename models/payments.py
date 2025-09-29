@@ -13,17 +13,22 @@ class Payment(Model):
         self.payment_date = payment_date
         self.payment_status = payment_status
         self.payment_amount = payment_amount
-        self.set_fields()
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
-    payment_id UUID NOT NULL,
-    order_id UUID NOT NULL,
-    payment_method VARCHAR NOT NULL,
-    payment_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    payment_status VARCHAR NOT NULL,
-    payment_amount NUMERIC NOT NULL,
-    PRIMARY KEY (payment_id),
-    FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Payments" (
+            payment_id UUID NOT NULL,
+            order_id UUID NOT NULL,
+            payment_method VARCHAR NOT NULL,
+            payment_date TIMESTAMP WITH TIME ZONE NOT NULL,
+            payment_status VARCHAR NOT NULL,
+            payment_amount NUMERIC NOT NULL,
+            PRIMARY KEY (payment_id),
+            FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE
+        )""")
+
+        connection.commit()
+
+Payment.init_model()

@@ -13,23 +13,28 @@ class OrderItem(Model):
         self.quantity = quantity
         self.unit_price = unit_price
         self.total_price = total_price
-        self.set_fields()
 
     def dump_update(self):
         obj = super().dump_update()
         del obj["total_price"]
         return obj
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "OrderItems" (
-    order_item_id UUID NOT NULL,
-    order_id UUID NOT NULL,
-    product_id UUID NOT NULL,
-    quantity INTEGER NOT NULL,
-    unit_price NUMERIC NOT NULL,
-    total_price NUMERIC NOT NULL GENERATED ALWAYS AS (quantity * unit_price) STORED,
-    PRIMARY KEY (order_item_id),
-    FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES "Products" (product_id) ON DELETE CASCADE
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "OrderItems" (
+            order_item_id UUID NOT NULL,
+            order_id UUID NOT NULL,
+            product_id UUID NOT NULL,
+            quantity INTEGER NOT NULL,
+            unit_price NUMERIC NOT NULL,
+            total_price NUMERIC NOT NULL GENERATED ALWAYS AS (quantity * unit_price) STORED,
+            PRIMARY KEY (order_item_id),
+            FOREIGN KEY (order_id) REFERENCES "Orders" (order_id) ON DELETE CASCADE,
+            FOREIGN KEY (product_id) REFERENCES "Products" (product_id) ON DELETE CASCADE
+        )""")
+
+        connection.commit()
+
+OrderItem.init_model()

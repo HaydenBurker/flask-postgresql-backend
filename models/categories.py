@@ -10,14 +10,19 @@ class Category(Model):
         self.category_id = category_id
         self.name = name
         self.description = description
-        self.set_fields()
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
-    category_id UUID NOT NULL,
-    name VARCHAR NOT NULL UNIQUE,
-    description VARCHAR,
-    UNIQUE (name),
-    PRIMARY KEY (category_id)
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Categories" (
+            category_id UUID NOT NULL,
+            name VARCHAR NOT NULL UNIQUE,
+            description VARCHAR,
+            UNIQUE (name),
+            PRIMARY KEY (category_id)
+        )""")
+
+        connection.commit()
+
+Category.init_model()

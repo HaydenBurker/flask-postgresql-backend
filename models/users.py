@@ -15,24 +15,29 @@ class User(Model):
         self.active = active
         self.created_at = created_at
         self.updated_at = updated_at
-        self.set_fields()
 
     def dump(self):
         obj = super().dump()
         del obj['password']
         return obj
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
-    user_id UUID NOT NULL,
-    first_name VARCHAR NOT NULL,
-    last_name VARCHAR NOT NULL,
-    email VARCHAR NOT NULL,
-    password VARCHAR NOT NULL,
-    active BOOLEAN NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    UNIQUE (email),
-    PRIMARY KEY (user_id)
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Users" (
+            user_id UUID NOT NULL,
+            first_name VARCHAR NOT NULL,
+            last_name VARCHAR NOT NULL,
+            email VARCHAR NOT NULL,
+            password VARCHAR NOT NULL,
+            active BOOLEAN NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            UNIQUE (email),
+            PRIMARY KEY (user_id)
+        )""")
+
+        connection.commit()
+
+User.init_model()

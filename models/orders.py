@@ -16,20 +16,25 @@ class Order(Model):
         self.active = active
         self.created_at = created_at
         self.updated_at = updated_at
-        self.set_fields()
 
-cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
-    order_id UUID NOT NULL,
-    customer_id UUID NOT NULL,
-    order_date TIMESTAMP WITH TIME ZONE,
-    shipping_date TIMESTAMP WITH TIME ZONE,
-    status VARCHAR NOT NULL,
-    total_amount INTEGER NOT NULL,
-    active BOOLEAN NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (order_id),
-    FOREIGN KEY (customer_id) REFERENCES "Users" (user_id) ON DELETE CASCADE
-)""")
+    @classmethod
+    def init_model(cls):
+        super().init_model()
 
-connection.commit()
+        cursor.execute("""CREATE TABLE IF NOT EXISTS "Orders" (
+            order_id UUID NOT NULL,
+            customer_id UUID NOT NULL,
+            order_date TIMESTAMP WITH TIME ZONE,
+            shipping_date TIMESTAMP WITH TIME ZONE,
+            status VARCHAR NOT NULL,
+            total_amount INTEGER NOT NULL,
+            active BOOLEAN NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            PRIMARY KEY (order_id),
+            FOREIGN KEY (customer_id) REFERENCES "Users" (user_id) ON DELETE CASCADE
+        )""")
+
+        connection.commit()
+
+Order.init_model()
