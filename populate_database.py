@@ -115,16 +115,16 @@ def populate_database():
     create_records(records, Discount)
 
     records = []
-    order_disount_ids = set()
-    for _ in range(Total.order_items):
+    order_discount_ids = set()
+    for _ in range(Total.orders_discounts):
         order_id = random.choice(order_ids)
         discount_id = random.choice(discount_ids)
 
         id = (order_id, discount_id)
-        if id in order_disount_ids:
+        if id in order_discount_ids:
             continue
 
-        order_disount_ids.add(id)
+        order_discount_ids.add(id)
         records += [*id]
     create_records(records, OrderDiscount)
 
